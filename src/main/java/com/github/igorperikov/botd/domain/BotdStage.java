@@ -1,16 +1,33 @@
 package com.github.igorperikov.botd.domain;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class BotdStage {
     private final int index;
     private final BotdUser author;
-    private final Map<String, List<BotdTrack>> tracks;
+    private final String band;
+    private final List<BotdTrack> tracks = new ArrayList<>();
 
-    public BotdStage(int index, BotdUser author, Map<String, List<BotdTrack>> tracks) {
+    public BotdStage(int index, BotdUser author, String band) {
         this.index = index;
         this.author = author;
-        this.tracks = tracks;
+        this.band = band;
+    }
+
+    public int getIndex() {
+        return index;
+    }
+
+    public BotdUser getAuthor() {
+        return author;
+    }
+
+    public String getBand() {
+        return band;
+    }
+
+    public List<BotdTrack> getTracks() {
+        return tracks;
     }
 }
