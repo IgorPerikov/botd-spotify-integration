@@ -28,4 +28,17 @@ public class BotdTrack {
     public BotdUser getBotdUser() {
         return botdUser;
     }
+
+    public String getSimpleName() {
+        return getBand() + " " + getTrack();
+    }
+
+    @Override
+    public String toString() {
+        return "BotdTrack{" +
+                "globalIndex=" + globalIndex +
+                ", band='" + band + '\'' +
+                ", track='" + track + '\'' +
+                '}';
+    }
 }
