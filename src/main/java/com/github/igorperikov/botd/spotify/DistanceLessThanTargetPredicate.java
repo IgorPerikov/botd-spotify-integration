@@ -28,14 +28,14 @@ public class DistanceLessThanTargetPredicate implements Predicate<Track> {
     public boolean test(Track track) {
         boolean isSimilar = Arrays.stream(track.getArtists())
                 .map(artist -> artist.getName() + " " + track.getName())
-                .anyMatch(name -> levenshteinDistance.apply(name, target) <= maxAllowedDistance);
-        log.info("'{}' and '{}' considered as '{}'", convertToString(track), target, isSimilar ? "similar" : "not similar");
+                .anyMatch(name -> levenshteinDistance.apply(name.toLowerCase(), target.toLowerCase()) <= maxAllowedDistance);
+        log.info("'{}' and '{}' considered as '{}'", target, convertToString(track), isSimilar ? "similar" : "not similar");
         return isSimilar;
     }
 
     private String convertToString(Track track) {
         return Arrays.stream(track.getArtists()).map(ArtistSimplified::getName).collect(Collectors.joining(",")) +
-                ":" +
+                " " +
                 track.getName();
     }
 }
