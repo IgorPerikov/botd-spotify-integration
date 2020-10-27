@@ -45,6 +45,7 @@ public class BotdDataExtractor {
             }
             currentStage.getTracks().add(new BotdTrack(i, currentStage.getBand(), (String) row.get(2), getUser(row)));
         }
+        result.add(currentStage);
 
         return result;
     }
