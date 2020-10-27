@@ -29,11 +29,7 @@ public class DistanceLessThanTargetPredicate implements Predicate<Track> {
         boolean isSimilar = Arrays.stream(track.getArtists())
                 .map(artist -> artist.getName() + " " + track.getName())
                 .anyMatch(name -> levenshteinDistance.apply(name, target) <= maxAllowedDistance);
-        if (isSimilar) {
-            log.info("'{}' and '{}' considered as 'similar'", convertToString(track), target);
-        } else {
-            log.debug("'{}' and '{}' considered as 'not similar'", convertToString(track), target);
-        }
+        log.info("'{}' and '{}' considered as '{}'", convertToString(track), target, isSimilar ? "similar" : "not similar");
         return isSimilar;
     }
 
