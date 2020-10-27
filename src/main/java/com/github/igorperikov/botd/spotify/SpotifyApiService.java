@@ -55,17 +55,25 @@ public class SpotifyApiService {
         spotifyApi.setAccessToken(newTokens.getAccessToken());
     }
 
-    public void add(BotdTrack botdTrack) {
+    /**
+     * @return true if track was found and added
+     */
+    public boolean add(BotdTrack botdTrack) {
         Optional<Song> cachedSong = songCache.lookup(botdTrack);
         Optional<Song> songToAdd = cachedSong.or(() -> findSong(botdTrack));
 
-        songToAdd.ifPresent(this::addToPlaylist);
+        if (songToAdd.isPresent()) {
+            addToPlaylist(songToAdd.get());
+            return true;
+        } else {
+            return false;
+        }
     }
 
     private Optional<Song> findSong(BotdTrack botdTrack) {
         Track[] foundTracks = findSongCandidates(botdTrack);
         if (foundTracks.length == 0) {
-            log.warn("Track {} not found on spotify", botdTrack);
+            log.error("Track {} not found on spotify", botdTrack);
             return Optional.empty();
         }
 

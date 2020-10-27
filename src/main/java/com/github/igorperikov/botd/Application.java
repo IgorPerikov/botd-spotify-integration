@@ -28,8 +28,10 @@ public class Application {
                 .filter(botdTrack -> !progressStorage.isProcessed(botdTrack))
                 .forEach(botdTrack -> {
                     log.info("Start processing {}", botdTrack);
-                    spotifyApiService.add(botdTrack);
-                    progressStorage.markAsProcessed(botdTrack);
+                    boolean added = spotifyApiService.add(botdTrack);
+                    if (added) {
+                        progressStorage.markAsProcessed(botdTrack);
+                    }
                     log.info("Finish processing {}", botdTrack);
                 });
     }

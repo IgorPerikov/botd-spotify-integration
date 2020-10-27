@@ -35,10 +35,10 @@ public class BotdTrack {
 
     @Override
     public String toString() {
-        return "BotdTrack{" +
-                "globalIndex=" + globalIndex +
-                ", band='" + band + '\'' +
-                ", track='" + track + '\'' +
+        return "Track{" +
+                "band=" + band +
+                ", track=" + track +
+                ", index=" + globalIndex +
                 '}';
     }
 }
