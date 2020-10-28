@@ -23,7 +23,8 @@ public class DistanceCalculator {
         return LEVENSHTEIN_DISTANCE.apply(first.toLowerCase(), second.toLowerCase());
     }
 
-    private static String removeParenthesesContent(String str) {
+    // TODO: extract to separate class?
+    public static String removeParenthesesContent(String str) {
         if (str.contains("(") && str.contains(")")) {
             return StringUtils.normalizeSpace(str.replaceAll("(\\(.*?\\))", ""));
         } else {

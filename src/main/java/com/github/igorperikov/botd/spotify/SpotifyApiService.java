@@ -1,5 +1,6 @@
 package com.github.igorperikov.botd.spotify;
 
+import com.github.igorperikov.botd.DistanceCalculator;
 import com.github.igorperikov.botd.domain.BotdTrack;
 import com.neovisionaries.i18n.CountryCode;
 import com.wrapper.spotify.SpotifyApi;
@@ -79,10 +80,13 @@ public class SpotifyApiService {
     }
 
     private Optional<Song> findSong(BotdTrack botdTrack) {
-        Track[] foundTracks = findSongCandidates(botdTrack);
+        Track[] foundTracks = findSongCandidates(botdTrack.getSimpleName());
         if (foundTracks.length == 0) {
-            log.error("Track {} not found on spotify", botdTrack);
-            return Optional.empty();
+            foundTracks = findSongCandidates(DistanceCalculator.removeParenthesesContent(botdTrack.getSimpleName()));
+            if (foundTracks.length == 0) {
+                log.error("Track {} not found on spotify", botdTrack);
+                return Optional.empty();
+            }
         }
 
         Optional<Track> mostAccurate = trackAccuracyService.findBest(botdTrack, foundTracks);
@@ -106,9 +110,9 @@ public class SpotifyApiService {
         return Optional.of(new Song(uri));
     }
 
-    private Track[] findSongCandidates(BotdTrack botdTrack) {
+    private Track[] findSongCandidates(String query) {
         try {
-            return spotifyApi.searchTracks(botdTrack.getSimpleName())
+            return spotifyApi.searchTracks(query)
                     .market(CountryCode.RU)
                     .limit(NUMBER_OF_TRACKS_TO_SEARCH_FOR)
                     .build()
