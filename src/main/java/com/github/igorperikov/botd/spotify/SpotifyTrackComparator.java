@@ -6,6 +6,7 @@ import com.wrapper.spotify.model_objects.specification.Track;
 
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -27,10 +28,14 @@ public class SpotifyTrackComparator implements Comparator<Track> {
 
     private int countScore(Track track) {
         int score = 0;
-        if (!trackName.equals(track.getName())) {
+        if (!trackName.equalsIgnoreCase(track.getName())) {
             score++;
         }
-        if (!Arrays.stream(track.getArtists()).map(ArtistSimplified::getName).collect(Collectors.toSet()).contains(bandName)) {
+        Set<String> artists = Arrays.stream(track.getArtists())
+                .map(ArtistSimplified::getName)
+                .map(String::toLowerCase)
+                .collect(Collectors.toSet());
+        if (!artists.contains(bandName.toLowerCase())) {
             score++;
         }
         return score;
