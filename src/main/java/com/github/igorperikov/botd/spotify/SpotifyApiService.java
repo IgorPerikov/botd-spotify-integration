@@ -26,7 +26,7 @@ public class SpotifyApiService {
     private static final Logger log = LoggerFactory.getLogger(SpotifyApiService.class);
 
     private static final String PLAYLIST_ID = "55RwDsEAaMLq4iVFnRrxFc";
-    private static final int NUMBER_OF_TRACKS_TO_SEARCH_FOR = 10;
+    private static final int NUMBER_OF_TRACKS_TO_SEARCH_FOR = 20;
 
     private static final String CLIENT_ID = Objects.requireNonNull(
             System.getenv("BOTD_SPOTIFY_CLIENT_ID"),
@@ -43,9 +43,15 @@ public class SpotifyApiService {
             .build();
 
     private final SongCache songCache;
+    private final TrackAccuracyService trackAccuracyService;
 
-    public SpotifyApiService(SongCache songCache, RefreshTokenStorage refreshTokenStorage) {
+    public SpotifyApiService(
+            SongCache songCache,
+            RefreshTokenStorage refreshTokenStorage,
+            TrackAccuracyService trackAccuracyService
+    ) {
         this.songCache = songCache;
+        this.trackAccuracyService = trackAccuracyService;
 
         String storedRefreshToken = refreshTokenStorage.get();
         log.info("Found refresh token, is blank='{}'", StringUtils.isBlank(storedRefreshToken));
@@ -79,9 +85,7 @@ public class SpotifyApiService {
             return Optional.empty();
         }
 
-        Optional<Track> mostAccurate = Arrays.stream(foundTracks)
-                .filter(new DistanceLessThanTargetPredicate(botdTrack))
-                .min(new SpotifyTrackComparator(botdTrack));
+        Optional<Track> mostAccurate = trackAccuracyService.findBest(botdTrack, foundTracks);
         if (mostAccurate.isEmpty()) {
             log.error(
                     "Didn't find track which is close enough to {}, available tracks were {}",

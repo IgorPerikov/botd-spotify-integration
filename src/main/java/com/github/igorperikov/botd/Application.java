@@ -5,6 +5,7 @@ import com.github.igorperikov.botd.domain.BotdStage;
 import com.github.igorperikov.botd.progress.LocalFileProgressStorage;
 import com.github.igorperikov.botd.spotify.LocalFileRefreshTokenStorage;
 import com.github.igorperikov.botd.spotify.SpotifyApiService;
+import com.github.igorperikov.botd.spotify.TrackAccuracyService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,7 +20,12 @@ public class Application {
         var extractor = new BotdDataExtractor(sheets);
         var progressStorage = new LocalFileProgressStorage();
         var refreshTokenStorage = new LocalFileRefreshTokenStorage();
-        var spotifyApiService = new SpotifyApiService(botdTrack -> Optional.empty(), refreshTokenStorage);
+        TrackAccuracyService trackAccuracyService = new TrackAccuracyService();
+        var spotifyApiService = new SpotifyApiService(
+                botdTrack -> Optional.empty(),
+                refreshTokenStorage,
+                trackAccuracyService
+        );
 
         BotdData botdData = extractor.extract();
         botdData.getBotdStages().stream()
