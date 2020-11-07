@@ -20,7 +20,7 @@ public class Application {
         var extractor = new BotdDataExtractor(sheets);
         var progressStorage = new LocalFileProgressStorage();
         var refreshTokenStorage = new LocalFileRefreshTokenStorage();
-        TrackAccuracyService trackAccuracyService = new TrackAccuracyService();
+        var trackAccuracyService = new TrackAccuracyService();
         var spotifyApiService = new SpotifyApiService(
                 botdTrack -> Optional.empty(),
                 refreshTokenStorage,

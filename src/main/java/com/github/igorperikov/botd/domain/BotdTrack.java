@@ -3,13 +3,15 @@ package com.github.igorperikov.botd.domain;
 public class BotdTrack {
     private final int globalIndex;
     private final String band;
-    private final String track;
+    private final String name;
+    private final boolean isAlbum;
     private final BotdUser botdUser;
 
-    public BotdTrack(int globalIndex, String band, String track, BotdUser botdUser) {
+    public BotdTrack(int globalIndex, String band, String name, boolean isAlbum, BotdUser botdUser) {
         this.globalIndex = globalIndex;
         this.band = band;
-        this.track = track;
+        this.name = name;
+        this.isAlbum = isAlbum;
         this.botdUser = botdUser;
     }
 
@@ -21,8 +23,12 @@ public class BotdTrack {
         return band;
     }
 
-    public String getTrack() {
-        return track;
+    public String getName() {
+        return name;
+    }
+
+    public boolean isAlbum() {
+        return isAlbum;
     }
 
     public BotdUser getBotdUser() {
@@ -30,14 +36,15 @@ public class BotdTrack {
     }
 
     public String getSimpleName() {
-        return getBand() + " " + getTrack();
+        return getBand() + " " + getName();
     }
 
     @Override
     public String toString() {
         return "Track{" +
                 "band=" + band +
-                ", track=" + track +
+                ", track=" + name +
+                ", album=" + isAlbum +
                 ", index=" + globalIndex +
                 '}';
     }

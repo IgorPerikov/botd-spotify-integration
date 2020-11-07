@@ -31,8 +31,8 @@ public class BotdDataExtractor {
         List<List<Object>> values = fetchBotdStagesData().getValues();
 
         BotdStage currentStage = null;
-        for (int i = 0; i < values.size(); i++) {
-            List<Object> row = values.get(i);
+        for (int rowIndex = 0; rowIndex < values.size(); rowIndex++) {
+            List<Object> row = values.get(rowIndex);
             Optional<BotdStage> nextStage = checkNextStage(row);
             if (nextStage.isPresent()) {
                 if (currentStage != null) {
@@ -43,7 +43,14 @@ public class BotdDataExtractor {
             if (currentStage == null) {
                 throw new RuntimeException("Current botd stage remained null, incorrect data or parsing");
             }
-            currentStage.getTracks().add(new BotdTrack(i, currentStage.getBand(), (String) row.get(2), getUser(row)));
+            BotdTrack botdTrack = new BotdTrack(
+                    rowIndex,
+                    currentStage.getBand(),
+                    (String) row.get(2),
+                    row.size() >= 7 && ((String) row.get(6)).equalsIgnoreCase("album"),
+                    getUser(row)
+            );
+            currentStage.getTracks().add(botdTrack);
         }
         result.add(currentStage); // add last stage
 
@@ -74,7 +81,7 @@ public class BotdDataExtractor {
         try {
             return sheets.spreadsheets()
                     .values()
-                    .get(SpreadsheetsInit.SPREADSHEET_ID, "history!A2:E10000")
+                    .get(SpreadsheetsInit.SPREADSHEET_ID, "history!A2:G10000")
                     .execute();
         } catch (IOException e) {
             log.error("Unable to get botd history data", e);
