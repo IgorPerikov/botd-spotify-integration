@@ -19,7 +19,7 @@ public class DistanceQualityPredicate implements Predicate<Track> {
 
     public DistanceQualityPredicate(BotdTrack botdTrack) {
         this.target = botdTrack.getSimpleName();
-        this.maxAllowedDistance = Math.max(3, (int) (target.length() * 0.25));
+        this.maxAllowedDistance = Math.max(3, (int) (target.length() * 0.3));
     }
 
     @Override
