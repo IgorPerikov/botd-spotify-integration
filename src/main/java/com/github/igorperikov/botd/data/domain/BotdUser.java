@@ -1,4 +1,4 @@
-package com.github.igorperikov.botd.domain;
+package com.github.igorperikov.botd.data.domain;
 
 import java.util.Objects;
 

@@ -1,11 +1,13 @@
 package com.github.igorperikov.botd;
 
-import com.github.igorperikov.botd.domain.BotdData;
-import com.github.igorperikov.botd.domain.BotdStage;
+import com.github.igorperikov.botd.accuracy.TrackAccuracyService;
+import com.github.igorperikov.botd.data.BotdDataExtractor;
+import com.github.igorperikov.botd.data.SpreadsheetsFactory;
+import com.github.igorperikov.botd.data.domain.BotdData;
+import com.github.igorperikov.botd.data.domain.BotdStage;
 import com.github.igorperikov.botd.progress.LocalFileProgressStorage;
 import com.github.igorperikov.botd.spotify.LocalFileRefreshTokenStorage;
 import com.github.igorperikov.botd.spotify.SpotifyApiService;
-import com.github.igorperikov.botd.spotify.TrackAccuracyService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +18,7 @@ public class Application {
     private static final Logger log = LoggerFactory.getLogger(Application.class);
 
     public static void main(String[] args) {
-        var sheets = SpreadsheetsInit.getService();
+        var sheets = SpreadsheetsFactory.create();
         var extractor = new BotdDataExtractor(sheets);
         var progressStorage = new LocalFileProgressStorage();
         var refreshTokenStorage = new LocalFileRefreshTokenStorage();

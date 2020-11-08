@@ -1,6 +1,6 @@
-package com.github.igorperikov.botd;
+package com.github.igorperikov.botd.data;
 
-import com.github.igorperikov.botd.domain.*;
+import com.github.igorperikov.botd.data.domain.*;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.model.ValueRange;
 import org.apache.commons.lang3.StringUtils;
@@ -81,7 +81,7 @@ public class BotdDataExtractor {
         try {
             return sheets.spreadsheets()
                     .values()
-                    .get(SpreadsheetsInit.SPREADSHEET_ID, "history!A2:G10000")
+                    .get(SpreadsheetsFactory.SPREADSHEET_ID, "history!A2:G10000")
                     .execute();
         } catch (IOException e) {
             log.error("Unable to get botd history data", e);
@@ -93,7 +93,7 @@ public class BotdDataExtractor {
         try {
             return sheets.spreadsheets()
                     .values()
-                    .get(SpreadsheetsInit.SPREADSHEET_ID, "users!A1:B25")
+                    .get(SpreadsheetsFactory.SPREADSHEET_ID, "users!A1:B25")
                     .execute();
         } catch (IOException e) {
             log.error("Unable to get botd users data", e);

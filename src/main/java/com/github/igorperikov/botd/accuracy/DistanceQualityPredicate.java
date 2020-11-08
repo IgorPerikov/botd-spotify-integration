@@ -1,7 +1,6 @@
-package com.github.igorperikov.botd.spotify;
+package com.github.igorperikov.botd.accuracy;
 
-import com.github.igorperikov.botd.DistanceCalculator;
-import com.github.igorperikov.botd.domain.BotdTrack;
+import com.github.igorperikov.botd.data.domain.BotdTrack;
 import com.wrapper.spotify.model_objects.specification.ArtistSimplified;
 import com.wrapper.spotify.model_objects.specification.Track;
 import org.slf4j.Logger;

@@ -1,4 +1,4 @@
-package com.github.igorperikov.botd;
+package com.github.igorperikov.botd.accuracy;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.similarity.LevenshteinDistance;

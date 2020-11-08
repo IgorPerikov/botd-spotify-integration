@@ -1,7 +1,8 @@
 package com.github.igorperikov.botd.spotify;
 
-import com.github.igorperikov.botd.DistanceCalculator;
-import com.github.igorperikov.botd.domain.BotdTrack;
+import com.github.igorperikov.botd.accuracy.DistanceCalculator;
+import com.github.igorperikov.botd.accuracy.TrackAccuracyService;
+import com.github.igorperikov.botd.data.domain.BotdTrack;
 import com.neovisionaries.i18n.CountryCode;
 import com.wrapper.spotify.SpotifyApi;
 import com.wrapper.spotify.exceptions.SpotifyWebApiException;

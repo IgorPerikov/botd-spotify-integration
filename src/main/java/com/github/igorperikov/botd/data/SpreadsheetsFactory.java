@@ -1,4 +1,4 @@
-package com.github.igorperikov.botd;
+package com.github.igorperikov.botd.data;
 
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
@@ -12,8 +12,8 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.Objects;
 
-public class SpreadsheetsInit {
-    private static final Logger log = LoggerFactory.getLogger(SpreadsheetsInit.class);
+public class SpreadsheetsFactory {
+    private static final Logger log = LoggerFactory.getLogger(SpreadsheetsFactory.class);
 
     public static final String SPREADSHEET_ID = Objects.requireNonNull(
             System.getenv("BOTD_SPREADHSHEET_ID"),
@@ -26,7 +26,7 @@ public class SpreadsheetsInit {
 
     private static final JacksonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
 
-    public static Sheets getService() {
+    public static Sheets create() {
         NetHttpTransport httpTransport;
         try {
             httpTransport = GoogleNetHttpTransport.newTrustedTransport();

@@ -1,6 +1,6 @@
 package com.github.igorperikov.botd.spotify;
 
-import com.github.igorperikov.botd.domain.BotdTrack;
+import com.github.igorperikov.botd.data.domain.BotdTrack;
 
 import java.util.Optional;
 

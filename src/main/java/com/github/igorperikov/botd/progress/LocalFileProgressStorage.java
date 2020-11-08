@@ -1,6 +1,6 @@
 package com.github.igorperikov.botd.progress;
 
-import com.github.igorperikov.botd.domain.BotdTrack;
+import com.github.igorperikov.botd.data.domain.BotdTrack;
 
 import java.io.IOException;
 import java.nio.file.Files;
