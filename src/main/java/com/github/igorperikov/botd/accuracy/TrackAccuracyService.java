@@ -7,15 +7,13 @@ import com.wrapper.spotify.model_objects.specification.Track;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class TrackAccuracyService {
     private static final Logger log = LoggerFactory.getLogger(TrackAccuracyService.class);
 
-    public Optional<Song> findBest(BotdTrack botdTrack, Track[] tracks) {
+    public List<Song> findBest(BotdTrack botdTrack, Track[] tracks) {
         Optional<Track> mostAccurate = Arrays.stream(tracks)
                 .filter(new DistanceQualityPredicate(botdTrack))
                 .min(comparatorByDistance(botdTrack));
@@ -25,7 +23,7 @@ public class TrackAccuracyService {
                     botdTrack,
                     tracksToString(tracks)
             );
-            return Optional.empty();
+            return Collections.emptyList();
         }
         Track result = mostAccurate.get();
         String uri = result.getUri();
@@ -36,7 +34,7 @@ public class TrackAccuracyService {
                 result.getArtists()[0].getName() + " " + result.getName(),
                 uri
         );
-        return Optional.of(new Song(uri));
+        return Collections.singletonList(new Song(uri));
     }
 
     private Comparator<Track> comparatorByDistance(BotdTrack botdTrack) {

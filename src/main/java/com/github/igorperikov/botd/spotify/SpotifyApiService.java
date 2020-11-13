@@ -14,8 +14,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 /**
  * Authorization url
@@ -63,27 +64,30 @@ public class SpotifyApiService {
     }
 
     /**
-     * @return true if was found and added
+     * @return true if something was found and added
      */
     public boolean add(BotdTrack botdTrack) {
-        Optional<Song> cachedSong = songCache.lookup(botdTrack);
-        Optional<Song> songToAdd = cachedSong.or(() -> findSong(botdTrack));
-
-        if (songToAdd.isPresent()) {
-            addToPlaylist(songToAdd.get());
-            return true;
+        List<Song> cachedSongs = songCache.lookup(botdTrack);
+        List<Song> songsToAdd;
+        if (cachedSongs.isEmpty()) {
+            songsToAdd = findSongs(botdTrack);
         } else {
-            return false;
+            songsToAdd = cachedSongs;
         }
+
+        for (Song song : songsToAdd) {
+            addToPlaylist(song);
+        }
+        return !songsToAdd.isEmpty();
     }
 
-    private Optional<Song> findSong(BotdTrack botdTrack) {
+    private List<Song> findSongs(BotdTrack botdTrack) {
         Track[] foundTracks = findSongCandidates(botdTrack.getSimpleName());
         if (foundTracks.length == 0) {
             foundTracks = findSongCandidates(DistanceCalculator.removeParenthesesContent(botdTrack.getSimpleName()));
             if (foundTracks.length == 0) {
                 log.error("Track {} not found on spotify", botdTrack);
-                return Optional.empty();
+                return Collections.emptyList();
             }
         }
 

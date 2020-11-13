@@ -12,7 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
-import java.util.Optional;
+import java.util.Collections;
 
 public class Application {
     private static final Logger log = LoggerFactory.getLogger(Application.class);
@@ -24,7 +24,7 @@ public class Application {
         var refreshTokenStorage = new LocalFileRefreshTokenStorage();
         var trackAccuracyService = new TrackAccuracyService();
         var spotifyApiService = new SpotifyApiService(
-                botdTrack -> Optional.empty(),
+                botdTrack -> Collections.emptyList(),
                 refreshTokenStorage,
                 trackAccuracyService
         );

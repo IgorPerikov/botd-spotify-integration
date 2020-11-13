@@ -2,11 +2,11 @@ package com.github.igorperikov.botd.spotify;
 
 import com.github.igorperikov.botd.data.domain.BotdTrack;
 
-import java.util.Optional;
+import java.util.List;
 
 /**
  * TODO: save results to optimize api usage and speed
  */
 public interface SongCache {
-    Optional<Song> lookup(BotdTrack botdTrack);
+    List<Song> lookup(BotdTrack botdTrack);
 }
