@@ -7,7 +7,6 @@ import com.neovisionaries.i18n.CountryCode;
 import com.wrapper.spotify.SpotifyApi;
 import com.wrapper.spotify.exceptions.SpotifyWebApiException;
 import com.wrapper.spotify.model_objects.credentials.AuthorizationCodeCredentials;
-import com.wrapper.spotify.model_objects.specification.ArtistSimplified;
 import com.wrapper.spotify.model_objects.specification.Track;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hc.core5.http.ParseException;
@@ -15,10 +14,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * Authorization url
@@ -66,7 +63,7 @@ public class SpotifyApiService {
     }
 
     /**
-     * @return true if track was found and added
+     * @return true if was found and added
      */
     public boolean add(BotdTrack botdTrack) {
         Optional<Song> cachedSong = songCache.lookup(botdTrack);
@@ -90,25 +87,7 @@ public class SpotifyApiService {
             }
         }
 
-        Optional<Track> mostAccurate = trackAccuracyService.findBest(botdTrack, foundTracks);
-        if (mostAccurate.isEmpty()) {
-            log.error(
-                    "Didn't find track which is close enough to {}, available tracks were {}",
-                    botdTrack,
-                    tracksToString(foundTracks)
-            );
-            return Optional.empty();
-        }
-        Track result = mostAccurate.get();
-        String uri = result.getUri();
-        log.info(
-                "Resolved track#{} '{}' as '{}', uri='{}'",
-                botdTrack.getGlobalIndex(),
-                botdTrack.getSimpleName(),
-                result.getArtists()[0].getName() + " " + result.getName(),
-                uri
-        );
-        return Optional.of(new Song(uri));
+        return trackAccuracyService.findBest(botdTrack, foundTracks);
     }
 
     private Track[] findSongCandidates(String query) {
@@ -142,16 +121,5 @@ public class SpotifyApiService {
         } catch (IOException | SpotifyWebApiException | ParseException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private String tracksToString(Track[] tracks) {
-        return Arrays.stream(tracks)
-                .map(this::trackToString)
-                .collect(Collectors.joining(" ; ", "[", "]"));
-    }
-
-    private String trackToString(Track track) {
-        String artists = Arrays.stream(track.getArtists()).map(ArtistSimplified::getName).collect(Collectors.joining(","));
-        return artists + "-" + track.getAlbum().getName() + "-" + track.getName();
     }
 }
