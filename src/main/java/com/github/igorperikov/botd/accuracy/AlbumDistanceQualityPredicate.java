@@ -1,8 +1,8 @@
 package com.github.igorperikov.botd.accuracy;
 
 import com.github.igorperikov.botd.data.domain.BotdTrack;
+import com.wrapper.spotify.model_objects.specification.AlbumSimplified;
 import com.wrapper.spotify.model_objects.specification.ArtistSimplified;
-import com.wrapper.spotify.model_objects.specification.Track;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,19 +10,19 @@ import java.util.Arrays;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-public class DistanceQualityPredicate implements Predicate<Track> {
-    private static final Logger log = LoggerFactory.getLogger(DistanceQualityPredicate.class);
+public class AlbumDistanceQualityPredicate implements Predicate<AlbumSimplified> {
+    private static final Logger log = LoggerFactory.getLogger(TrackDistanceQualityPredicate.class);
 
     private final String target;
     private final int maxAllowedDistance;
 
-    public DistanceQualityPredicate(BotdTrack botdTrack) {
+    public AlbumDistanceQualityPredicate(BotdTrack botdTrack) {
         this.target = botdTrack.getSimpleName();
-        this.maxAllowedDistance = Math.max(3, (int) (target.length() * 0.3));
+        this.maxAllowedDistance = Math.max(3, (int) (target.length() * 0.2));
     }
 
     @Override
-    public boolean test(Track track) {
+    public boolean test(AlbumSimplified track) {
         boolean isSimilar = Arrays.stream(track.getArtists())
                 .map(artist -> artist.getName() + " " + track.getName())
                 .anyMatch(name -> DistanceCalculator.minPossibleDistance(name, target) <= maxAllowedDistance);
@@ -30,9 +30,9 @@ public class DistanceQualityPredicate implements Predicate<Track> {
         return isSimilar;
     }
 
-    private String convertToString(Track track) {
-        return Arrays.stream(track.getArtists()).map(ArtistSimplified::getName).collect(Collectors.joining(",")) +
+    private String convertToString(AlbumSimplified album) {
+        return Arrays.stream(album.getArtists()).map(ArtistSimplified::getName).collect(Collectors.joining(",")) +
                 " " +
-                track.getName();
+                album.getName();
     }
 }

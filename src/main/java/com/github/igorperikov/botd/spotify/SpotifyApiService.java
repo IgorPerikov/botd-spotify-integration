@@ -7,6 +7,7 @@ import com.neovisionaries.i18n.CountryCode;
 import com.wrapper.spotify.SpotifyApi;
 import com.wrapper.spotify.exceptions.SpotifyWebApiException;
 import com.wrapper.spotify.model_objects.credentials.AuthorizationCodeCredentials;
+import com.wrapper.spotify.model_objects.specification.AlbumSimplified;
 import com.wrapper.spotify.model_objects.specification.Track;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hc.core5.http.ParseException;
@@ -14,9 +15,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Authorization url
@@ -26,7 +26,7 @@ public class SpotifyApiService {
     private static final Logger log = LoggerFactory.getLogger(SpotifyApiService.class);
 
     private static final String PLAYLIST_ID = "55RwDsEAaMLq4iVFnRrxFc";
-    private static final int NUMBER_OF_TRACKS_TO_SEARCH_FOR = 20;
+    private static final int NUMBER_OF_ITEMS_TO_SEARCH_FOR = 20;
 
     private static final String CLIENT_ID = Objects.requireNonNull(
             System.getenv("BOTD_SPOTIFY_CLIENT_ID"),
@@ -82,26 +82,74 @@ public class SpotifyApiService {
     }
 
     private List<Song> findSongs(BotdTrack botdTrack) {
-        Track[] foundTracks = findSongCandidates(botdTrack.getSimpleName());
-        if (foundTracks.length == 0) {
-            foundTracks = findSongCandidates(DistanceCalculator.removeParenthesesContent(botdTrack.getSimpleName()));
+        if (botdTrack.isAlbum()) {
+            AlbumSimplified[] albumCandidates = findAlbumCandidates(botdTrack.getSimpleName());
+            if (albumCandidates.length == 0) {
+                log.error("Album {} not found on spotify", botdTrack);
+                return Collections.emptyList();
+            }
+            Optional<Album> best = trackAccuracyService.findBest(botdTrack, albumCandidates);
+            return best.map(this::getTracksOfAlbum).orElse(Collections.emptyList());
+        } else {
+            Track[] foundTracks = findSongs(botdTrack.getSimpleName());
             if (foundTracks.length == 0) {
                 log.error("Track {} not found on spotify", botdTrack);
                 return Collections.emptyList();
             }
+            return trackAccuracyService.findBest(botdTrack, foundTracks)
+                    .map(Collections::singletonList)
+                    .orElse(Collections.emptyList());
         }
+    }
 
-        return trackAccuracyService.findBest(botdTrack, foundTracks);
+    private Track[] findSongs(String name) {
+        Track[] foundTracks = findSongCandidates(name);
+        if (foundTracks.length == 0) {
+            foundTracks = findSongCandidates(DistanceCalculator.removeParenthesesContent(name));
+            if (foundTracks.length == 0) {
+                return new Track[0];
+            }
+        }
+        return foundTracks;
     }
 
     private Track[] findSongCandidates(String query) {
         try {
             return spotifyApi.searchTracks(query)
                     .market(CountryCode.RU)
-                    .limit(NUMBER_OF_TRACKS_TO_SEARCH_FOR)
+                    .limit(NUMBER_OF_ITEMS_TO_SEARCH_FOR)
                     .build()
                     .execute()
                     .getItems();
+        } catch (IOException | SpotifyWebApiException | ParseException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private AlbumSimplified[] findAlbumCandidates(String query) {
+        try {
+            return spotifyApi.searchAlbums(query)
+                    .market(CountryCode.RU)
+                    .limit(NUMBER_OF_ITEMS_TO_SEARCH_FOR)
+                    .build()
+                    .execute()
+                    .getItems();
+        } catch (IOException | SpotifyWebApiException | ParseException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private List<Song> getTracksOfAlbum(Album album) {
+        try {
+            return Arrays.stream(
+                    spotifyApi.getAlbumsTracks(album.getId())
+                            .market(CountryCode.RU)
+                            .limit(NUMBER_OF_ITEMS_TO_SEARCH_FOR)
+                            .build()
+                            .execute()
+                            .getItems())
+                    .map(trackSimplified -> new Song(trackSimplified.getUri()))
+                    .collect(Collectors.toList());
         } catch (IOException | SpotifyWebApiException | ParseException e) {
             throw new RuntimeException(e);
         }
