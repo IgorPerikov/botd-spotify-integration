@@ -37,9 +37,7 @@ public class Application {
                 .forEach(botdTrack -> {
                     log.info("Start processing {}", botdTrack);
                     boolean added = spotifyApiService.add(botdTrack);
-                    if (added) {
-                        progressStorage.markAsProcessed(botdTrack);
-                    }
+                    progressStorage.markAsProcessed(botdTrack);
                     log.info("Finish processing {}", botdTrack);
                 });
     }
