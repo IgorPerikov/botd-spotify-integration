@@ -8,5 +8,5 @@ import java.util.List;
  * TODO: save results to optimize api usage and speed
  */
 public interface SongCache {
-    List<Song> lookup(BotdTrack botdTrack);
+    List<SpotifyEntity> lookup(BotdTrack botdTrack);
 }

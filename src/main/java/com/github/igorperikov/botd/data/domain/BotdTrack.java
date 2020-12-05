@@ -43,7 +43,7 @@ public class BotdTrack {
     public String toString() {
         return "Track{" +
                 "band=" + band +
-                ", track=" + name +
+                ", name=" + name +
                 ", album=" + isAlbum +
                 ", index=" + globalIndex +
                 '}';

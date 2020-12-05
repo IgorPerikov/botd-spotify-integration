@@ -1,6 +1,6 @@
 package com.github.igorperikov.botd;
 
-import com.github.igorperikov.botd.accuracy.TrackAccuracyService;
+import com.github.igorperikov.botd.accuracy.AccuracyService;
 import com.github.igorperikov.botd.data.BotdDataExtractor;
 import com.github.igorperikov.botd.data.SpreadsheetsFactory;
 import com.github.igorperikov.botd.data.domain.BotdData;
@@ -22,7 +22,7 @@ public class Application {
         var extractor = new BotdDataExtractor(sheets);
         var progressStorage = new LocalFileProgressStorage();
         var refreshTokenStorage = new LocalFileRefreshTokenStorage();
-        var trackAccuracyService = new TrackAccuracyService();
+        var trackAccuracyService = new AccuracyService();
         var spotifyApiService = new SpotifyApiService(
                 botdTrack -> Collections.emptyList(),
                 refreshTokenStorage,
