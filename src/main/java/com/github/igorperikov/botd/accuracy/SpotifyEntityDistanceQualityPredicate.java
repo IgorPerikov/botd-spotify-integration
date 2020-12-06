@@ -26,7 +26,7 @@ public class SpotifyEntityDistanceQualityPredicate implements Predicate<SpotifyE
         boolean isSimilar = Arrays.stream(track.getArtists())
                 .map(artist -> artist.getName() + " " + track.getName())
                 .anyMatch(name -> DistanceCalculationUtils.minPossibleDistance(name, target) <= maxAllowedDistance);
-        log.info("'{}' and '{}' considered as '{}'", target, convertToString(track), isSimilar ? "similar" : "not similar");
+        log.info("'{}' and '{}' considered {}", target, convertToString(track), isSimilar ? "similar" : "not similar");
         return isSimilar;
     }
 
