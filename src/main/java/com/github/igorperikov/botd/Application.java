@@ -1,13 +1,13 @@
 package com.github.igorperikov.botd;
 
 import com.github.igorperikov.botd.accuracy.AccuracyService;
-import com.github.igorperikov.botd.data.BotdDataExtractor;
-import com.github.igorperikov.botd.data.SpreadsheetsFactory;
-import com.github.igorperikov.botd.data.domain.BotdData;
-import com.github.igorperikov.botd.data.domain.BotdStage;
-import com.github.igorperikov.botd.progress.LocalFileProgressStorage;
-import com.github.igorperikov.botd.spotify.LocalFileRefreshTokenStorage;
+import com.github.igorperikov.botd.entity.BotdData;
+import com.github.igorperikov.botd.entity.BotdStage;
+import com.github.igorperikov.botd.parser.BotdDataExtractor;
+import com.github.igorperikov.botd.parser.SpreadsheetsFactory;
 import com.github.igorperikov.botd.spotify.SpotifyApiService;
+import com.github.igorperikov.botd.storage.LocalFileProgressStorage;
+import com.github.igorperikov.botd.storage.LocalFileRefreshTokenStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

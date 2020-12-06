@@ -1,4 +1,4 @@
-package com.github.igorperikov.botd.spotify;
+package com.github.igorperikov.botd.storage;
 
 public interface RefreshTokenStorage {
     String get();

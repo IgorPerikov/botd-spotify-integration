@@ -1,4 +1,4 @@
-package com.github.igorperikov.botd.data.domain;
+package com.github.igorperikov.botd.entity;
 
 import java.util.List;
 

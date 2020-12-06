@@ -1,4 +1,4 @@
-package com.github.igorperikov.botd.spotify;
+package com.github.igorperikov.botd.entity;
 
 import com.wrapper.spotify.model_objects.specification.AlbumSimplified;
 import com.wrapper.spotify.model_objects.specification.ArtistSimplified;

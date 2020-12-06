@@ -1,4 +1,4 @@
-package com.github.igorperikov.botd.data;
+package com.github.igorperikov.botd.parser;
 
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;

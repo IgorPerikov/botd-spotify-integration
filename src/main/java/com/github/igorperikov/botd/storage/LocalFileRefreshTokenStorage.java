@@ -1,4 +1,4 @@
-package com.github.igorperikov.botd.spotify;
+package com.github.igorperikov.botd.storage;
 
 import java.io.IOException;
 import java.nio.file.Files;

@@ -1,6 +1,7 @@
-package com.github.igorperikov.botd.spotify;
+package com.github.igorperikov.botd.cache;
 
-import com.github.igorperikov.botd.data.domain.BotdTrack;
+import com.github.igorperikov.botd.entity.BotdTrack;
+import com.github.igorperikov.botd.entity.SpotifyEntity;
 
 import java.util.List;
 

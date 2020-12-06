@@ -1,7 +1,7 @@
 package com.github.igorperikov.botd.accuracy;
 
-import com.github.igorperikov.botd.data.domain.BotdTrack;
-import com.github.igorperikov.botd.spotify.SpotifyEntity;
+import com.github.igorperikov.botd.entity.BotdTrack;
+import com.github.igorperikov.botd.entity.SpotifyEntity;
 import com.wrapper.spotify.model_objects.specification.ArtistSimplified;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

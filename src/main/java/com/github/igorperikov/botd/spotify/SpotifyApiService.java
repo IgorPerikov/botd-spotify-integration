@@ -2,7 +2,10 @@ package com.github.igorperikov.botd.spotify;
 
 import com.github.igorperikov.botd.accuracy.AccuracyService;
 import com.github.igorperikov.botd.accuracy.DistanceCalculationUtils;
-import com.github.igorperikov.botd.data.domain.BotdTrack;
+import com.github.igorperikov.botd.cache.SongCache;
+import com.github.igorperikov.botd.entity.BotdTrack;
+import com.github.igorperikov.botd.entity.SpotifyEntity;
+import com.github.igorperikov.botd.storage.RefreshTokenStorage;
 import com.neovisionaries.i18n.CountryCode;
 import com.wrapper.spotify.SpotifyApi;
 import com.wrapper.spotify.exceptions.SpotifyWebApiException;
@@ -74,7 +77,7 @@ public class SpotifyApiService {
         List<SpotifyEntity> cachedSongs = songCache.lookup(botdTrack);
         List<SpotifyEntity> songsToAdd;
         if (cachedSongs.isEmpty()) {
-            songsToAdd = findSongs(botdTrack);
+            songsToAdd = find(botdTrack);
         } else {
             songsToAdd = cachedSongs;
         }
@@ -82,7 +85,7 @@ public class SpotifyApiService {
         return !songsToAdd.isEmpty();
     }
 
-    private List<SpotifyEntity> findSongs(BotdTrack botdTrack) {
+    private List<SpotifyEntity> find(BotdTrack botdTrack) {
         List<SpotifyEntity> candidates = findCandidates(botdTrack);
         if (candidates.size() == 0) {
             log.error("{} not found on spotify", botdTrack);

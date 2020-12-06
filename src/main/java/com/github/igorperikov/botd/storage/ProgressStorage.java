@@ -1,6 +1,6 @@
-package com.github.igorperikov.botd.progress;
+package com.github.igorperikov.botd.storage;
 
-import com.github.igorperikov.botd.data.domain.BotdTrack;
+import com.github.igorperikov.botd.entity.BotdTrack;
 
 public interface ProgressStorage {
     boolean isProcessed(BotdTrack botdTrack);

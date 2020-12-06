@@ -1,6 +1,6 @@
-package com.github.igorperikov.botd.data;
+package com.github.igorperikov.botd.parser;
 
-import com.github.igorperikov.botd.data.domain.*;
+import com.github.igorperikov.botd.entity.*;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.model.ValueRange;
 import org.apache.commons.lang3.StringUtils;
