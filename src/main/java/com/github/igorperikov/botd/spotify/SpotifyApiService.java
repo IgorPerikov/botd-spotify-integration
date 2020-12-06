@@ -106,11 +106,11 @@ public class SpotifyApiService {
 
     private List<SpotifyEntity> findCandidates(BotdTrack botdTrack) {
         if (botdTrack.isAlbum()) {
-            return Arrays.stream(findAlbumCandidates(botdTrack.getSimpleName()))
+            return Arrays.stream(findAlbumCandidates(botdTrack.getFullName()))
                     .map(SpotifyEntity::fromAlbum)
                     .collect(Collectors.toList());
         } else {
-            return Arrays.stream(findSongCandidates(botdTrack.getSimpleName()))
+            return Arrays.stream(findSongCandidates(botdTrack.getFullName()))
                     .map(SpotifyEntity::fromTrack)
                     .collect(Collectors.toList());
         }

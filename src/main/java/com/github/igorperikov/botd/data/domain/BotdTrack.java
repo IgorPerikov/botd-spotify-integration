@@ -35,17 +35,12 @@ public class BotdTrack {
         return botdUser;
     }
 
-    public String getSimpleName() {
+    public String getFullName() {
         return getBand() + " " + getName();
     }
 
     @Override
     public String toString() {
-        return "Track{" +
-                "band=" + band +
-                ", name=" + name +
-                ", album=" + isAlbum +
-                ", index=" + globalIndex +
-                '}';
+        return String.format("%s#%d '%s'", isAlbum ? "album" : "track", globalIndex, getFullName());
     }
 }

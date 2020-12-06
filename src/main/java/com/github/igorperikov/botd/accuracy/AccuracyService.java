@@ -21,8 +21,7 @@ public class AccuracyService {
                 .min(spotifyEntityComparatorByDistance(botdTrack));
         if (mostAccurate.isEmpty()) {
             log.error(
-                    "Didn't find {} close enough to={}, found={}",
-                    botdTrack.isAlbum() ? "album" : "track",
+                    "Didn't find anything close enough to={}, found={}",
                     botdTrack,
                     entitiesToString(candidates)
             );
@@ -30,10 +29,8 @@ public class AccuracyService {
         }
         SpotifyEntity result = mostAccurate.get();
         log.info(
-                "Resolved {}#{} '{}' as '{}', id='{}'",
-                botdTrack.isAlbum() ? "album" : "track",
-                botdTrack.getGlobalIndex(),
-                botdTrack.getSimpleName(),
+                "Resolved {} as '{}', id='{}'",
+                botdTrack,
                 result.getArtists()[0].getName() + " " + result.getName(),
                 result.getId()
         );
@@ -44,7 +41,7 @@ public class AccuracyService {
         return Comparator.comparingInt(entity ->
                 Arrays.stream(entity.getArtists())
                         .map(artist -> artist.getName() + " " + entity.getName())
-                        .map(trackName -> DistanceCalculationUtils.distance(trackName, botdTrack.getSimpleName()))
+                        .map(trackName -> DistanceCalculationUtils.distance(trackName, botdTrack.getFullName()))
                         .min(Integer::compareTo)
                         .get()
         );
