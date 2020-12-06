@@ -78,11 +78,7 @@ public class SpotifyApiService {
         } else {
             songsToAdd = cachedSongs;
         }
-
-        for (SpotifyEntity song : songsToAdd) {
-            // TODO: we can add all at once
-            addToPlaylist(song);
-        }
+        addToPlaylist(songsToAdd);
         return !songsToAdd.isEmpty();
     }
 
@@ -169,10 +165,13 @@ public class SpotifyApiService {
         }
     }
 
-    private void addToPlaylist(SpotifyEntity song) {
+    private void addToPlaylist(List<SpotifyEntity> songs) {
+        if (songs.isEmpty()) return;
         try {
-            // TODO: batch optimization
-            spotifyApi.addItemsToPlaylist(PLAYLIST_ID, new String[]{song.getId()}).build().execute();
+            spotifyApi.addItemsToPlaylist(
+                    PLAYLIST_ID,
+                    songs.stream().map(SpotifyEntity::getId).toArray(String[]::new)
+            ).build().execute();
         } catch (IOException | SpotifyWebApiException | ParseException e) {
             throw new RuntimeException(e);
         }
