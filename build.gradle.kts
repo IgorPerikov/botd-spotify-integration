@@ -1,5 +1,6 @@
 plugins {
     java
+    application
 }
 
 group = "com.github.igorperikov.botd"
@@ -26,4 +27,8 @@ dependencies {
 
 configure<JavaPluginConvention> {
     sourceCompatibility = JavaVersion.VERSION_14
+}
+
+application {
+    mainClass.set("com.github.igorperikov.botd.Application")
 }
