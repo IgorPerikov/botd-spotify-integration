@@ -6,4 +6,6 @@ public interface ProgressStorage {
     boolean isProcessed(BotdTrack botdTrack);
 
     void markAsProcessed(BotdTrack botdTrack);
+
+    void deleteAllProgress();
 }

@@ -4,13 +4,20 @@ import com.github.igorperikov.botd.accuracy.AccuracyService;
 import com.github.igorperikov.botd.accuracy.DistanceCalculationUtils;
 import com.github.igorperikov.botd.cache.SongCache;
 import com.github.igorperikov.botd.entity.BotdTrack;
+import com.github.igorperikov.botd.entity.PlaylistItems;
 import com.github.igorperikov.botd.entity.SpotifyEntity;
 import com.github.igorperikov.botd.storage.RefreshTokenStorage;
+import com.google.common.collect.Lists;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import com.neovisionaries.i18n.CountryCode;
 import com.wrapper.spotify.SpotifyApi;
 import com.wrapper.spotify.exceptions.SpotifyWebApiException;
 import com.wrapper.spotify.model_objects.credentials.AuthorizationCodeCredentials;
 import com.wrapper.spotify.model_objects.specification.AlbumSimplified;
+import com.wrapper.spotify.model_objects.specification.Paging;
+import com.wrapper.spotify.model_objects.specification.PlaylistTrack;
 import com.wrapper.spotify.model_objects.specification.Track;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hc.core5.http.ParseException;
@@ -18,10 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -83,6 +87,55 @@ public class SpotifyApiService {
         }
         addToPlaylist(songsToAdd);
         return !songsToAdd.isEmpty();
+    }
+
+    public void deleteAllSongsFromPlaylist() {
+        int limit = 100; // max allowed by spotify api
+        List<PlaylistTrack> playlistItems = getAllPlaylistItems(limit);
+        deletePlaylistItems(playlistItems, limit);
+    }
+
+    private List<PlaylistTrack> getAllPlaylistItems(int limit) {
+        int offset = 0;
+        List<PlaylistTrack> tracks = new ArrayList<>();
+        boolean hasMore = true;
+        while (hasMore) {
+            PlaylistItems playlistItems = getPlaylistItems(limit, offset);
+            Collections.addAll(tracks, playlistItems.getTracks());
+            hasMore = playlistItems.isHasMore();
+            offset += limit;
+        }
+        return tracks;
+    }
+
+    private PlaylistItems getPlaylistItems(int limit, int offset) {
+        try {
+            Paging<PlaylistTrack> paging = spotifyApi.getPlaylistsItems(PLAYLIST_ID)
+                    .limit(limit)
+                    .offset(offset)
+                    .build()
+                    .execute();
+            return new PlaylistItems(paging.getItems(), paging.getNext() != null);
+        } catch (IOException | SpotifyWebApiException | ParseException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void deletePlaylistItems(List<PlaylistTrack> allItems, int limit) {
+        for (List<PlaylistTrack> partitionItems : Lists.partition(allItems, limit)) {
+            try {
+                JsonArray uris = new JsonArray();
+                for (PlaylistTrack partitionItem : partitionItems) {
+                    String uri = ((Track) partitionItem.getTrack()).getUri();
+                    JsonObject jsonObject = new JsonObject();
+                    jsonObject.add("uri", new JsonPrimitive(uri));
+                    uris.add(jsonObject);
+                }
+                spotifyApi.removeItemsFromPlaylist(PLAYLIST_ID, uris).build().execute();
+            } catch (IOException | SpotifyWebApiException | ParseException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     private List<SpotifyEntity> find(BotdTrack botdTrack) {

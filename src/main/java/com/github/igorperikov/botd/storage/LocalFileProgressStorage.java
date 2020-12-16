@@ -42,6 +42,20 @@ public class LocalFileProgressStorage implements ProgressStorage {
         }
     }
 
+    @Override
+    public void deleteAllProgress() {
+        try {
+            deleteExistingAndCreateEmptyFile();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private synchronized void deleteExistingAndCreateEmptyFile() throws IOException {
+        Files.deleteIfExists(LOCAL_FILE_PATH);
+        Files.createFile(LOCAL_FILE_PATH);
+    }
+
     private synchronized void write(int globalIndex) throws IOException {
         Set<Integer> currentIndexes = read();
         currentIndexes.add(globalIndex);
