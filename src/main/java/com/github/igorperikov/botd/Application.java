@@ -1,18 +1,18 @@
 package com.github.igorperikov.botd;
 
 import com.github.igorperikov.botd.accuracy.AccuracyService;
-import com.github.igorperikov.botd.entity.BotdStage;
+import com.github.igorperikov.botd.entity.BotdTrack;
 import com.github.igorperikov.botd.parser.BotdDataExtractor;
 import com.github.igorperikov.botd.parser.SpreadsheetsFactory;
 import com.github.igorperikov.botd.restart.CleanupService;
-import com.github.igorperikov.botd.restart.RestartService;
+import com.github.igorperikov.botd.restart.LocalFileMd5Storage;
+import com.github.igorperikov.botd.restart.Md5RestartService;
 import com.github.igorperikov.botd.spotify.SpotifyApiService;
 import com.github.igorperikov.botd.storage.LocalFileProgressStorage;
 import com.github.igorperikov.botd.storage.LocalFileRefreshTokenStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
 import java.util.Collections;
 
 public class Application {
@@ -31,21 +31,20 @@ public class Application {
         var sheets = SpreadsheetsFactory.create();
         var extractor = new BotdDataExtractor(sheets);
         var botdData = extractor.extract();
+        var md5Storage = new LocalFileMd5Storage();
 
-        RestartService restartService = () -> false;
-        if (restartService.restartRequired()) {
+        var restartService = new Md5RestartService(md5Storage, progressStorage);
+        if (restartService.restartRequired(botdData)) {
             new CleanupService(spotifyApiService, progressStorage).cleanup();
         }
 
-        botdData.getBotdStages().stream()
-                .map(BotdStage::getTracks)
-                .flatMap(Collection::stream)
-                .filter(botdTrack -> !progressStorage.isProcessed(botdTrack))
-                .forEach(botdTrack -> {
-                    log.info("Start processing {}", botdTrack);
-                    boolean added = spotifyApiService.add(botdTrack);
-                    progressStorage.markAsProcessed(botdTrack);
-                    log.info("Finish processing {}", botdTrack);
-                });
+        for (BotdTrack botdTrack : progressStorage.getAllUnprocessed(botdData)) {
+            log.info("Start processing {}", botdTrack);
+            boolean added = spotifyApiService.add(botdTrack);
+            progressStorage.markAsProcessed(botdTrack);
+            log.info("Finish processing {}", botdTrack);
+        }
+
+        md5Storage.write(progressStorage.getMd5OfAllProcessed(botdData));
     }
 }

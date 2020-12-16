@@ -6,3 +6,4 @@ build/
 out
 src/main/resources/progress
 src/main/resources/refresh_token
+src/main/resources/md5

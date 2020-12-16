@@ -1,5 +1,6 @@
 package com.github.igorperikov.botd.storage;
 
+import com.github.igorperikov.botd.entity.BotdData;
 import com.github.igorperikov.botd.entity.BotdTrack;
 
 import java.io.IOException;
@@ -51,6 +52,24 @@ public class LocalFileProgressStorage implements ProgressStorage {
         }
     }
 
+    @Override
+    public List<BotdTrack> getAllProcessed(BotdData botdData) {
+        Set<Integer> processed = readNoCheckedException();
+        return botdData.getAllTracks()
+                .stream()
+                .filter(botdTrack -> processed.contains(botdTrack.getGlobalIndex()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<BotdTrack> getAllUnprocessed(BotdData botdData) {
+        Set<Integer> processed = readNoCheckedException();
+        return botdData.getAllTracks()
+                .stream()
+                .filter(botdTrack -> !processed.contains(botdTrack.getGlobalIndex()))
+                .collect(Collectors.toList());
+    }
+
     private synchronized void deleteExistingAndCreateEmptyFile() throws IOException {
         Files.deleteIfExists(LOCAL_FILE_PATH);
         Files.createFile(LOCAL_FILE_PATH);
@@ -71,5 +90,13 @@ public class LocalFileProgressStorage implements ProgressStorage {
         }
         String setString = strings.get(0);
         return Arrays.stream(setString.split(",")).mapToInt(Integer::parseInt).boxed().collect(Collectors.toSet());
+    }
+
+    private Set<Integer> readNoCheckedException() {
+        try {
+            return read();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
