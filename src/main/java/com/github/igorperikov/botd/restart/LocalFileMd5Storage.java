@@ -9,8 +9,8 @@ public class LocalFileMd5Storage implements Md5Storage {
     private static final Path LOCAL_FILE_PATH = Path.of(
             "/",
             "Users",
-            "baltor",
-            "idea_projects_personal",
+            "igorperikov",
+            "idea_projects",
             "botd_spotify_integration",
             "src",
             "main",
