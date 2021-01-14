@@ -10,6 +10,7 @@ import com.github.igorperikov.botd.restart.Md5RestartService;
 import com.github.igorperikov.botd.spotify.SpotifyApiService;
 import com.github.igorperikov.botd.storage.LocalFileProgressStorage;
 import com.github.igorperikov.botd.storage.LocalFileRefreshTokenStorage;
+import com.github.igorperikov.botd.telegram.TelegramMessageSender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,6 +20,8 @@ public class Application {
     private static final Logger log = LoggerFactory.getLogger(Application.class);
 
     public static void main(String[] args) {
+        var telegramMessageSender = new TelegramMessageSender();
+
         var refreshTokenStorage = new LocalFileRefreshTokenStorage();
         var trackAccuracyService = new AccuracyService();
         var spotifyApiService = new SpotifyApiService(
@@ -33,18 +36,28 @@ public class Application {
         var botdData = extractor.extract();
         var md5Storage = new LocalFileMd5Storage();
 
-        var restartService = new Md5RestartService(md5Storage, progressStorage);
-        if (restartService.restartRequired(botdData)) {
+        var restartRequired = new Md5RestartService(md5Storage, progressStorage).restartRequired(botdData);
+        if (restartRequired) {
+            telegramMessageSender.send("Playlist destruction initiated, find a shelter immediately");
             new CleanupService(spotifyApiService, progressStorage).cleanup();
         }
 
+        int newlyAddedTracks = 0;
         for (BotdTrack botdTrack : progressStorage.getAllUnprocessed(botdData)) {
             log.info("Start processing {}", botdTrack);
             boolean added = spotifyApiService.add(botdTrack);
+            if (added) {
+                newlyAddedTracks++;
+            }
             progressStorage.markAsProcessed(botdTrack);
             log.info("Finish processing {}", botdTrack);
         }
-
         md5Storage.write(progressStorage.getMd5OfAllProcessed(botdData));
+
+        if (restartRequired) {
+            telegramMessageSender.send("Playlist is available again, you can leave your shelter");
+        } else if (newlyAddedTracks != 0) {
+            telegramMessageSender.send(String.format("%d tracks has been added to playlist", newlyAddedTracks));
+        }
     }
 }
