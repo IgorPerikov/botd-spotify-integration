@@ -10,7 +10,6 @@ import com.github.igorperikov.botd.restart.Md5RestartService;
 import com.github.igorperikov.botd.spotify.SpotifyApiService;
 import com.github.igorperikov.botd.storage.LocalFileProgressStorage;
 import com.github.igorperikov.botd.storage.LocalFileRefreshTokenStorage;
-import com.github.igorperikov.botd.telegram.TelegramMessageSender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,44 +19,39 @@ public class Application {
     private static final Logger log = LoggerFactory.getLogger(Application.class);
 
     public static void main(String[] args) {
-        var telegramMessageSender = new TelegramMessageSender();
+        try (var context = new AppExecutionContext()) {
+            var refreshTokenStorage = new LocalFileRefreshTokenStorage();
+            var trackAccuracyService = new AccuracyService();
+            var spotifyApiService = new SpotifyApiService(
+                    botdTrack -> Collections.emptyList(),
+                    refreshTokenStorage,
+                    trackAccuracyService
+            );
 
-        var refreshTokenStorage = new LocalFileRefreshTokenStorage();
-        var trackAccuracyService = new AccuracyService();
-        var spotifyApiService = new SpotifyApiService(
-                botdTrack -> Collections.emptyList(),
-                refreshTokenStorage,
-                trackAccuracyService
-        );
+            var progressStorage = new LocalFileProgressStorage();
+            var sheets = SpreadsheetsFactory.create();
+            var extractor = new BotdDataExtractor(sheets);
+            var botdData = extractor.extract();
+            var md5Storage = new LocalFileMd5Storage();
 
-        var progressStorage = new LocalFileProgressStorage();
-        var sheets = SpreadsheetsFactory.create();
-        var extractor = new BotdDataExtractor(sheets);
-        var botdData = extractor.extract();
-        var md5Storage = new LocalFileMd5Storage();
-
-        var restartRequired = new Md5RestartService(md5Storage, progressStorage).restartRequired(botdData);
-        if (restartRequired) {
-            telegramMessageSender.send("Playlist destruction initiated, find a shelter immediately");
-            new CleanupService(spotifyApiService, progressStorage).cleanup();
-        }
-
-        int newlyAddedTracks = 0;
-        for (BotdTrack botdTrack : progressStorage.getAllUnprocessed(botdData)) {
-            log.info("Start processing {}", botdTrack);
-            boolean added = spotifyApiService.add(botdTrack);
-            if (added) {
-                newlyAddedTracks++;
+            var restartRequired = new Md5RestartService(md5Storage, progressStorage).restartRequired(botdData);
+            if (restartRequired) {
+                context.registerRestart();
+                new CleanupService(spotifyApiService, progressStorage).cleanup();
             }
-            progressStorage.markAsProcessed(botdTrack);
-            log.info("Finish processing {}", botdTrack);
-        }
-        md5Storage.write(progressStorage.getMd5OfAllProcessed(botdData));
 
-        if (restartRequired) {
-            telegramMessageSender.send("Playlist is available again, you can leave your shelter");
-        } else if (newlyAddedTracks != 0) {
-            telegramMessageSender.send(String.format("%d tracks has been added to playlist", newlyAddedTracks));
+            for (BotdTrack botdTrack : progressStorage.getAllUnprocessed(botdData)) {
+                log.info("Start processing {}", botdTrack);
+                boolean added = spotifyApiService.add(botdTrack);
+                if (added) {
+                    context.registerNewTrackAddition();
+                }
+                progressStorage.markAsProcessed(botdTrack);
+                log.info("Finish processing {}", botdTrack);
+            }
+            md5Storage.write(progressStorage.getMd5OfAllProcessed(botdData));
+        } catch (Exception e) {
+            log.error("", e);
         }
     }
 }
