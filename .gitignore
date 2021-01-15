@@ -4,7 +4,7 @@ build/
 .gradle
 .gradletasknamecache
 out
-src/main/resources/progress
-src/main/resources/refresh_token
-src/main/resources/md5
-src/main/resources/song_cache
+src/main/resources/progress.txt
+src/main/resources/refresh_token.txt
+src/main/resources/md5.txt
+src/main/resources/song_cache.txt
