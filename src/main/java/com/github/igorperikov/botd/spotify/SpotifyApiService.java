@@ -30,8 +30,7 @@ import java.util.stream.Collectors;
 
 /**
  * Authorization url
- * https://accounts.spotify.com/authorize?client_id=6624e196221e489a87490750cfa34354&response_type=code&redirect_uri
- * =https%3A%2F%2Fthis-is-my-website.io&scope=playlist-modify-public
+ * https://accounts.spotify.com/authorize?client_id=6624e196221e489a87490750cfa34354&response_type=code&redirect_uri=https%3A%2F%2Fthis-is-my-website.io&scope=playlist-modify-public
  */
 public class SpotifyApiService {
     private static final Logger log = LoggerFactory.getLogger(SpotifyApiService.class);
@@ -65,6 +64,7 @@ public class SpotifyApiService {
         this.accuracyService = accuracyService;
 
         String storedRefreshToken = refreshTokenStorage.get();
+        // TODO: fallback on previous access token?
         log.info("Found refresh token, is blank='{}'", StringUtils.isBlank(storedRefreshToken));
         AuthorizationCodeCredentials newTokens = getNewTokens(storedRefreshToken);
         if (newTokens.getRefreshToken() != null) {
