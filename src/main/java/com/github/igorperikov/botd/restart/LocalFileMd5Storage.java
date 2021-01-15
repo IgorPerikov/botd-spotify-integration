@@ -15,7 +15,7 @@ public class LocalFileMd5Storage implements Md5Storage {
             "src",
             "main",
             "resources",
-            "md5"
+            "md5.txt"
     );
 
     public LocalFileMd5Storage() {

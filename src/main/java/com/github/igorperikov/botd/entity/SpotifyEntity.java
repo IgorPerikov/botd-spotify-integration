@@ -11,17 +11,13 @@ import com.wrapper.spotify.model_objects.specification.TrackSimplified;
  * or
  * {@link com.wrapper.spotify.model_objects.specification.Track}
  */
-public class SpotifyEntity {
-    /**
-     * uri for song, id for album
-     */
-    private final String id;
+public class SpotifyEntity extends SpotifyId {
     private final String name;
     private final boolean isTrack;
     private final ArtistSimplified[] artists;
 
     private SpotifyEntity(String id, String name, boolean isTrack, ArtistSimplified[] artists) {
-        this.id = id;
+        super(id);
         this.name = name;
         this.isTrack = isTrack;
         this.artists = artists;
@@ -37,10 +33,6 @@ public class SpotifyEntity {
 
     public static SpotifyEntity fromAlbum(AlbumSimplified album) {
         return new SpotifyEntity(album.getId(), album.getName(), false, album.getArtists());
-    }
-
-    public String getId() {
-        return id;
     }
 
     public String getName() {

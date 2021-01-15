@@ -1,13 +1,12 @@
 package com.github.igorperikov.botd.cache;
 
 import com.github.igorperikov.botd.entity.BotdTrack;
-import com.github.igorperikov.botd.entity.SpotifyEntity;
+import com.github.igorperikov.botd.entity.SpotifyId;
 
 import java.util.List;
 
-/**
- * TODO: save results to optimize api usage and speed
- */
 public interface SongCache {
-    List<SpotifyEntity> lookup(BotdTrack botdTrack);
+    List<? extends SpotifyId> lookup(BotdTrack botdTrack);
+
+    void save(BotdTrack botdTrack, List<? extends SpotifyId> spotifyIds);
 }

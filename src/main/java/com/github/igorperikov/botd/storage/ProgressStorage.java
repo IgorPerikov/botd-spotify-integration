@@ -2,7 +2,6 @@ package com.github.igorperikov.botd.storage;
 
 import com.github.igorperikov.botd.entity.BotdData;
 import com.github.igorperikov.botd.entity.BotdTrack;
-import org.apache.commons.codec.digest.DigestUtils;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,14 +25,5 @@ public interface ProgressStorage {
                 .stream()
                 .filter(botdTrack -> !isProcessed(botdTrack))
                 .collect(Collectors.toList());
-    }
-
-    default String getMd5OfAllProcessed(BotdData botdData) {
-        return DigestUtils.md5Hex(
-                getAllProcessed(botdData)
-                        .stream()
-                        .map(Object::toString)
-                        .collect(Collectors.joining(";"))
-        );
     }
 }

@@ -1,6 +1,7 @@
 package com.github.igorperikov.botd;
 
 import com.github.igorperikov.botd.accuracy.AccuracyService;
+import com.github.igorperikov.botd.cache.LocalFileSongCache;
 import com.github.igorperikov.botd.entity.BotdTrack;
 import com.github.igorperikov.botd.parser.BotdDataExtractor;
 import com.github.igorperikov.botd.parser.SpreadsheetsFactory;
@@ -13,8 +14,6 @@ import com.github.igorperikov.botd.storage.LocalFileRefreshTokenStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collections;
-
 public class Application {
     private static final Logger log = LoggerFactory.getLogger(Application.class);
 
@@ -24,7 +23,7 @@ public class Application {
             var refreshTokenStorage = new LocalFileRefreshTokenStorage();
             var trackAccuracyService = new AccuracyService();
             var spotifyApiService = new SpotifyApiService(
-                    botdTrack -> Collections.emptyList(),
+                    new LocalFileSongCache(),
                     refreshTokenStorage,
                     trackAccuracyService
             );
@@ -35,7 +34,7 @@ public class Application {
             var botdData = extractor.extract();
             var md5Storage = new LocalFileMd5Storage();
 
-            var restartRequired = new Md5RestartService(md5Storage, progressStorage).restartRequired(botdData);
+            var restartRequired = new Md5RestartService(md5Storage).restartRequired(botdData);
             if (restartRequired) {
                 context.registerRestart();
                 new CleanupService(spotifyApiService, progressStorage).cleanup();
@@ -50,7 +49,7 @@ public class Application {
                 progressStorage.markAsProcessed(botdTrack);
                 log.info("Finish processing {}", botdTrack);
             }
-            md5Storage.write(progressStorage.getMd5OfAllProcessed(botdData));
+            md5Storage.write(botdData.getMd5());
         } catch (Exception e) {
             log.error("Execution failed:", e);
         }

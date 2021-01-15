@@ -1,5 +1,7 @@
 package com.github.igorperikov.botd.entity;
 
+import org.apache.commons.codec.digest.DigestUtils;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,5 +28,9 @@ public class BotdData {
                 .map(BotdStage::getTracks)
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList());
+    }
+
+    public String getMd5() {
+        return DigestUtils.md5Hex(getAllTracks().stream().map(Object::toString).collect(Collectors.joining(";")));
     }
 }

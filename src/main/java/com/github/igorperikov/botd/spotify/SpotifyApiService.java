@@ -6,6 +6,7 @@ import com.github.igorperikov.botd.cache.SongCache;
 import com.github.igorperikov.botd.entity.BotdTrack;
 import com.github.igorperikov.botd.entity.PlaylistItems;
 import com.github.igorperikov.botd.entity.SpotifyEntity;
+import com.github.igorperikov.botd.entity.SpotifyId;
 import com.github.igorperikov.botd.storage.RefreshTokenStorage;
 import com.google.common.collect.Lists;
 import com.google.gson.JsonArray;
@@ -78,12 +79,12 @@ public class SpotifyApiService {
      * @return true if something was found and added
      */
     public boolean add(BotdTrack botdTrack) {
-        List<SpotifyEntity> cachedSongs = songCache.lookup(botdTrack);
-        List<SpotifyEntity> songsToAdd;
-        if (cachedSongs.isEmpty()) {
+        List<? extends SpotifyId> songsToAdd = songCache.lookup(botdTrack);
+        if (songsToAdd.isEmpty()) {
             songsToAdd = find(botdTrack);
+            songCache.save(botdTrack, songsToAdd);
         } else {
-            songsToAdd = cachedSongs;
+            log.info("{} found in song cache", botdTrack);
         }
         addToPlaylist(songsToAdd);
         return !songsToAdd.isEmpty();
@@ -205,10 +206,10 @@ public class SpotifyApiService {
         }
     }
 
-    private List<SpotifyEntity> getTracksOfAlbum(SpotifyEntity spotifyEntity) {
+    private List<SpotifyEntity> getTracksOfAlbum(SpotifyId spotifyId) {
         try {
             return Arrays.stream(
-                    spotifyApi.getAlbumsTracks(spotifyEntity.getId())
+                    spotifyApi.getAlbumsTracks(spotifyId.getId())
                             .market(CountryCode.RU)
                             .limit(NUMBER_OF_ITEMS_TO_SEARCH_FOR)
                             .build()
@@ -221,12 +222,12 @@ public class SpotifyApiService {
         }
     }
 
-    private void addToPlaylist(List<SpotifyEntity> songs) {
+    private void addToPlaylist(List<? extends SpotifyId> songs) {
         if (songs.isEmpty()) return;
         try {
             spotifyApi.addItemsToPlaylist(
                     PLAYLIST_ID,
-                    songs.stream().map(SpotifyEntity::getId).toArray(String[]::new)
+                    songs.stream().map(SpotifyId::getId).toArray(String[]::new)
             ).build().execute();
         } catch (IOException | SpotifyWebApiException | ParseException e) {
             throw new RuntimeException(e);

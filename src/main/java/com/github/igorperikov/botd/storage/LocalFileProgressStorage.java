@@ -22,7 +22,7 @@ public class LocalFileProgressStorage implements ProgressStorage {
             "src",
             "main",
             "resources",
-            "progress"
+            "progress.txt"
     );
 
     @Override

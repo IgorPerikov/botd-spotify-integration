@@ -15,7 +15,7 @@ public class LocalFileRefreshTokenStorage implements RefreshTokenStorage {
             "src",
             "main",
             "resources",
-            "refresh_token"
+            "refresh_token.txt"
     );
 
     @Override
