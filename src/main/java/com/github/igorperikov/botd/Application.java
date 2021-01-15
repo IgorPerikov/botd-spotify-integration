@@ -19,6 +19,7 @@ public class Application {
     private static final Logger log = LoggerFactory.getLogger(Application.class);
 
     public static void main(String[] args) {
+        // TODO: add mutual exclusion on OS level
         try (var context = new AppExecutionContext()) {
             var refreshTokenStorage = new LocalFileRefreshTokenStorage();
             var trackAccuracyService = new AccuracyService();
@@ -51,7 +52,7 @@ public class Application {
             }
             md5Storage.write(progressStorage.getMd5OfAllProcessed(botdData));
         } catch (Exception e) {
-            log.error("", e);
+            log.error("Execution failed:", e);
         }
     }
 }
