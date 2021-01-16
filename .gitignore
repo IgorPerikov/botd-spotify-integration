@@ -9,3 +9,4 @@ src/main/resources/refresh_token.txt
 src/main/resources/md5.txt
 src/main/resources/song_cache.txt
 src/main/resources/lock.txt
+src/main/resources/access_token.txt

@@ -7,7 +7,6 @@ import com.github.igorperikov.botd.entity.BotdTrack;
 import com.github.igorperikov.botd.entity.PlaylistItems;
 import com.github.igorperikov.botd.entity.SpotifyEntity;
 import com.github.igorperikov.botd.entity.SpotifyId;
-import com.github.igorperikov.botd.storage.RefreshTokenStorage;
 import com.google.common.collect.Lists;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -15,18 +14,19 @@ import com.google.gson.JsonPrimitive;
 import com.neovisionaries.i18n.CountryCode;
 import com.wrapper.spotify.SpotifyApi;
 import com.wrapper.spotify.exceptions.SpotifyWebApiException;
-import com.wrapper.spotify.model_objects.credentials.AuthorizationCodeCredentials;
 import com.wrapper.spotify.model_objects.specification.AlbumSimplified;
 import com.wrapper.spotify.model_objects.specification.Paging;
 import com.wrapper.spotify.model_objects.specification.PlaylistTrack;
 import com.wrapper.spotify.model_objects.specification.Track;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.hc.core5.http.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -39,40 +39,18 @@ public class SpotifyApiService {
     private static final String PLAYLIST_ID = "55RwDsEAaMLq4iVFnRrxFc";
     private static final int NUMBER_OF_ITEMS_TO_SEARCH_FOR = 20;
 
-    private static final String CLIENT_ID = Objects.requireNonNull(
-            System.getenv("BOTD_SPOTIFY_CLIENT_ID"),
-            "provide BOTD_SPOTIFY_CLIENT_ID envvar"
-    );
-    private static final String CLIENT_SECRET = Objects.requireNonNull(
-            System.getenv("BOTD_SPOTIFY_CLIENT_SECRET"),
-            "provide BOTD_SPOTIFY_CLIENT_SECRET envvar"
-    );
-
-    private static final SpotifyApi spotifyApi = new SpotifyApi.Builder()
-            .setClientId(CLIENT_ID)
-            .setClientSecret(CLIENT_SECRET)
-            .build();
-
+    private final SpotifyApi spotifyApi;
     private final SongCache songCache;
     private final AccuracyService accuracyService;
 
     public SpotifyApiService(
+            SpotifyApi spotifyApi,
             SongCache songCache,
-            RefreshTokenStorage refreshTokenStorage,
             AccuracyService accuracyService
     ) {
+        this.spotifyApi = spotifyApi;
         this.songCache = songCache;
         this.accuracyService = accuracyService;
-
-        String storedRefreshToken = refreshTokenStorage.get();
-        // TODO: fallback on previous access token?
-        log.info("Found refresh token, is blank='{}'", StringUtils.isBlank(storedRefreshToken));
-        AuthorizationCodeCredentials newTokens = getNewTokens(storedRefreshToken);
-        if (newTokens.getRefreshToken() != null) {
-            log.info("Got new refresh token from accounts service, updating");
-            refreshTokenStorage.update(newTokens.getRefreshToken());
-        }
-        spotifyApi.setAccessToken(newTokens.getAccessToken());
     }
 
     /**
@@ -229,18 +207,6 @@ public class SpotifyApiService {
                     PLAYLIST_ID,
                     songs.stream().map(SpotifyId::getId).toArray(String[]::new)
             ).build().execute();
-        } catch (IOException | SpotifyWebApiException | ParseException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private AuthorizationCodeCredentials getNewTokens(String refreshToken) {
-        try {
-            return spotifyApi.authorizationCodeRefresh()
-                    .grant_type("refresh_token")
-                    .refresh_token(refreshToken)
-                    .build()
-                    .execute();
         } catch (IOException | SpotifyWebApiException | ParseException e) {
             throw new RuntimeException(e);
         }

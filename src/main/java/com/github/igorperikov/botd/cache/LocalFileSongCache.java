@@ -72,6 +72,7 @@ public class LocalFileSongCache implements SongCache {
                             Arrays.stream(kvSplit[1].split(MULTIVALUE_SEPARATOR)).map(SpotifyId::new).collect(Collectors.toList())
                     );
                 } else {
+                    // TODO: distinguish wrong format from situation when no appropriate track was found
                     log.error("Song cache record '{}' supposed to follow AAAA -> BB,CC,DD", record);
                 }
             }

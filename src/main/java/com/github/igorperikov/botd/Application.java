@@ -10,7 +10,9 @@ import com.github.igorperikov.botd.parser.SpreadsheetsFactory;
 import com.github.igorperikov.botd.restart.CleanupService;
 import com.github.igorperikov.botd.restart.LocalFileMd5Storage;
 import com.github.igorperikov.botd.restart.Md5RestartService;
+import com.github.igorperikov.botd.spotify.SpotifyApiFactory;
 import com.github.igorperikov.botd.spotify.SpotifyApiService;
+import com.github.igorperikov.botd.storage.LocalFileAccessTokenStorage;
 import com.github.igorperikov.botd.storage.LocalFileProgressStorage;
 import com.github.igorperikov.botd.storage.LocalFileRefreshTokenStorage;
 import org.slf4j.Logger;
@@ -21,12 +23,14 @@ public class Application {
 
     public static void main(String[] args) {
         try (var context = new AppExecutionContext(); var ignored = new FileBasedProcessMutualExclusionLock()) {
-            var refreshTokenStorage = new LocalFileRefreshTokenStorage();
-            var trackAccuracyService = new AccuracyService();
+            var spotifyApiFactory = new SpotifyApiFactory(
+                    new LocalFileRefreshTokenStorage(),
+                    new LocalFileAccessTokenStorage()
+            );
             var spotifyApiService = new SpotifyApiService(
+                    spotifyApiFactory.create(),
                     new LocalFileSongCache(),
-                    refreshTokenStorage,
-                    trackAccuracyService
+                    new AccuracyService()
             );
 
             var progressStorage = new LocalFileProgressStorage();
