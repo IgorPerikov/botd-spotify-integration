@@ -3,6 +3,8 @@ package com.github.igorperikov.botd;
 import com.github.igorperikov.botd.accuracy.AccuracyService;
 import com.github.igorperikov.botd.cache.LocalFileSongCache;
 import com.github.igorperikov.botd.entity.BotdTrack;
+import com.github.igorperikov.botd.execution.AppExecutionContext;
+import com.github.igorperikov.botd.execution.FileBasedProcessMutualExclusionLock;
 import com.github.igorperikov.botd.parser.BotdDataExtractor;
 import com.github.igorperikov.botd.parser.SpreadsheetsFactory;
 import com.github.igorperikov.botd.restart.CleanupService;
@@ -18,8 +20,7 @@ public class Application {
     private static final Logger log = LoggerFactory.getLogger(Application.class);
 
     public static void main(String[] args) {
-        // TODO: add mutual exclusion on OS level
-        try (var context = new AppExecutionContext()) {
+        try (var context = new AppExecutionContext(); var ignored = new FileBasedProcessMutualExclusionLock()) {
             var refreshTokenStorage = new LocalFileRefreshTokenStorage();
             var trackAccuracyService = new AccuracyService();
             var spotifyApiService = new SpotifyApiService(

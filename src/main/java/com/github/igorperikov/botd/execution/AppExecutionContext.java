@@ -1,4 +1,4 @@
-package com.github.igorperikov.botd;
+package com.github.igorperikov.botd.execution;
 
 import com.github.igorperikov.botd.telegram.TelegramMessageSender;
 import org.slf4j.Logger;
