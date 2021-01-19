@@ -39,7 +39,7 @@ public class Application {
             var botdData = extractor.extract();
             var md5Storage = new LocalFileMd5Storage();
 
-            var restartRequired = new Md5RestartService(md5Storage).restartRequired(botdData);
+            var restartRequired = new Md5RestartService(md5Storage, progressStorage).restartRequired(botdData);
             if (restartRequired) {
                 context.registerRestart();
                 new CleanupService(spotifyApiService, progressStorage).cleanup();
@@ -54,7 +54,7 @@ public class Application {
                 progressStorage.markAsProcessed(botdTrack);
                 log.info("Finish processing {}", botdTrack);
             }
-            md5Storage.write(botdData.getMd5());
+            md5Storage.write(progressStorage.getMd5OfAllProcessed(botdData));
         } catch (Exception e) {
             log.error("Execution failed:", e);
         }
