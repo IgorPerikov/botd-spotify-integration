@@ -44,7 +44,7 @@ public class BotdDataExtractor {
                 throw new RuntimeException("Current botd stage remained null, incorrect data or parsing");
             }
             BotdTrack botdTrack = new BotdTrack(
-                    rowIndex,
+                    rowIndex + 2, // 1 for header row and 1 because array is zero-based indexing
                     currentStage.getBand(),
                     (String) row.get(2),
                     row.size() >= 7 && ((String) row.get(6)).equalsIgnoreCase("album"),
