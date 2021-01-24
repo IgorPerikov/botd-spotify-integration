@@ -7,6 +7,7 @@ import com.github.igorperikov.botd.entity.BotdTrack;
 import com.github.igorperikov.botd.entity.PlaylistItems;
 import com.github.igorperikov.botd.entity.SpotifyEntity;
 import com.github.igorperikov.botd.entity.SpotifyId;
+import com.github.igorperikov.botd.telegram.TelegramMessageSender;
 import com.google.common.collect.Lists;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -42,15 +43,18 @@ public class SpotifyApiService {
     private final SpotifyApi spotifyApi;
     private final SongCache songCache;
     private final AccuracyService accuracyService;
+    private final TelegramMessageSender telegramMessageSender;
 
     public SpotifyApiService(
             SpotifyApi spotifyApi,
             SongCache songCache,
-            AccuracyService accuracyService
+            AccuracyService accuracyService,
+            TelegramMessageSender telegramMessageSender
     ) {
         this.spotifyApi = spotifyApi;
         this.songCache = songCache;
         this.accuracyService = accuracyService;
+        this.telegramMessageSender = telegramMessageSender;
     }
 
     /**
@@ -58,8 +62,11 @@ public class SpotifyApiService {
      */
     public boolean add(BotdTrack botdTrack) {
         List<? extends SpotifyId> songsToAdd = songCache.lookup(botdTrack);
-        if (songsToAdd.isEmpty()) {
+        if (songsToAdd == null) {
             songsToAdd = find(botdTrack);
+            if (songsToAdd.isEmpty()) {
+                telegramMessageSender.sendToContentManager(String.format("%s not found", botdTrack));
+            }
             songCache.save(botdTrack, songsToAdd);
         } else {
             log.info("{} found in song cache", botdTrack);

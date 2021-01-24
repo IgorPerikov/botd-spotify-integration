@@ -15,14 +15,22 @@ import com.github.igorperikov.botd.spotify.SpotifyApiService;
 import com.github.igorperikov.botd.storage.LocalFileAccessTokenStorage;
 import com.github.igorperikov.botd.storage.LocalFileProgressStorage;
 import com.github.igorperikov.botd.storage.LocalFileRefreshTokenStorage;
+import com.github.igorperikov.botd.telegram.TelegramMessageSender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+// todo: unify logging/telegram behind single facade
+// todo tests/decoupling
 public class Application {
     private static final Logger log = LoggerFactory.getLogger(Application.class);
 
     public static void main(String[] args) {
-        try (var context = new AppExecutionContext(); var ignored = new FileBasedProcessMutualExclusionLock()) {
+        var telegramMessageSender = new TelegramMessageSender();
+
+        try (
+                var context = new AppExecutionContext(telegramMessageSender);
+                var ignored = new FileBasedProcessMutualExclusionLock()
+        ) {
             var spotifyApiFactory = new SpotifyApiFactory(
                     new LocalFileRefreshTokenStorage(),
                     new LocalFileAccessTokenStorage()
@@ -30,7 +38,8 @@ public class Application {
             var spotifyApiService = new SpotifyApiService(
                     spotifyApiFactory.create(),
                     new LocalFileSongCache(),
-                    new AccuracyService()
+                    new AccuracyService(),
+                    telegramMessageSender
             );
 
             var progressStorage = new LocalFileProgressStorage();

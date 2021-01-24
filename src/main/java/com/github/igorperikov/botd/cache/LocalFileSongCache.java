@@ -2,8 +2,6 @@ package com.github.igorperikov.botd.cache;
 
 import com.github.igorperikov.botd.entity.BotdTrack;
 import com.github.igorperikov.botd.entity.SpotifyId;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -13,8 +11,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class LocalFileSongCache implements SongCache {
-    private static final Logger log = LoggerFactory.getLogger(LocalFileSongCache.class);
-
     private static final String KEY_VALUE_SEPARATOR = " -> ";
     private static final String MULTIVALUE_SEPARATOR = ",";
     private static final Path LOCAL_FILE_PATH = Path.of(
@@ -44,7 +40,7 @@ public class LocalFileSongCache implements SongCache {
 
     @Override
     public List<? extends SpotifyId> lookup(BotdTrack botdTrack) {
-        return cache.getOrDefault(getId(botdTrack), Collections.emptyList());
+        return cache.get(getId(botdTrack));
     }
 
     @Override
@@ -71,9 +67,9 @@ public class LocalFileSongCache implements SongCache {
                             kvSplit[0],
                             Arrays.stream(kvSplit[1].split(MULTIVALUE_SEPARATOR)).map(SpotifyId::new).collect(Collectors.toList())
                     );
-                } else {
-                    // TODO: distinguish wrong format from situation when no appropriate track was found
-                    log.error("Song cache record '{}' supposed to follow AAAA -> BB,CC,DD", record);
+                }
+                if (kvSplit.length == 1) {
+                    cache.put(kvSplit[0], Collections.emptyList());
                 }
             }
         } catch (IOException e) {
