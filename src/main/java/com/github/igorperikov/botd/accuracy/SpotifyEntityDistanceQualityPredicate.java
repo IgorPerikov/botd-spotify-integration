@@ -18,7 +18,7 @@ public class SpotifyEntityDistanceQualityPredicate implements Predicate<SpotifyE
 
     public SpotifyEntityDistanceQualityPredicate(BotdTrack botdTrack) {
         this.target = botdTrack.getFullName();
-        this.maxAllowedDistance = Math.max(3, (int) (target.length() * 0.2));
+        this.maxAllowedDistance = Math.max(3, (int) (target.length() * 0.35));
     }
 
     @Override
