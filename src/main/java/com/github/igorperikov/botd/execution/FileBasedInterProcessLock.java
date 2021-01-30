@@ -11,10 +11,10 @@ import java.nio.channels.FileLock;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-public class FileBasedProcessMutualExclusionLock implements ProcessMutualExclusionLock {
-    private static final Logger log = LoggerFactory.getLogger(FileBasedProcessMutualExclusionLock.class);
+public class FileBasedInterProcessLock implements InterProcessLock {
+    private static final Logger log = LoggerFactory.getLogger(FileBasedInterProcessLock.class);
 
-    private static final Path LOCAL_FILE_PATH = Path.of(
+    private static final Path LOCK_FILE_PATH = Path.of(
             "/",
             "Users",
             "igorperikov",
@@ -28,10 +28,10 @@ public class FileBasedProcessMutualExclusionLock implements ProcessMutualExclusi
 
     private FileLock lock;
 
-    public FileBasedProcessMutualExclusionLock() {
-        if (Files.notExists(LOCAL_FILE_PATH)) {
+    public FileBasedInterProcessLock() {
+        if (Files.notExists(LOCK_FILE_PATH)) {
             try {
-                Files.createFile(LOCAL_FILE_PATH);
+                Files.createFile(LOCK_FILE_PATH);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -45,7 +45,7 @@ public class FileBasedProcessMutualExclusionLock implements ProcessMutualExclusi
     }
 
     private void lock() {
-        File file = LOCAL_FILE_PATH.toFile();
+        File file = LOCK_FILE_PATH.toFile();
         try {
             FileChannel channel = new RandomAccessFile(file, "rw").getChannel();
             this.lock = channel.tryLock(0, 1, false);

@@ -1,20 +1,20 @@
 package com.github.igorperikov.botd;
 
 import com.github.igorperikov.botd.accuracy.AccuracyService;
-import com.github.igorperikov.botd.cache.LocalFileSongCache;
+import com.github.igorperikov.botd.cache.ResourceFileSongCache;
 import com.github.igorperikov.botd.entity.BotdTrack;
 import com.github.igorperikov.botd.execution.AppExecutionContext;
-import com.github.igorperikov.botd.execution.FileBasedProcessMutualExclusionLock;
+import com.github.igorperikov.botd.execution.FileBasedInterProcessLock;
 import com.github.igorperikov.botd.parser.BotdDataExtractor;
 import com.github.igorperikov.botd.parser.SpreadsheetsFactory;
 import com.github.igorperikov.botd.restart.CleanupService;
-import com.github.igorperikov.botd.restart.LocalFileMd5Storage;
 import com.github.igorperikov.botd.restart.Md5RestartService;
+import com.github.igorperikov.botd.restart.ResourceFileMd5Storage;
 import com.github.igorperikov.botd.spotify.SpotifyApiFactory;
 import com.github.igorperikov.botd.spotify.SpotifyApiService;
-import com.github.igorperikov.botd.storage.LocalFileAccessTokenStorage;
-import com.github.igorperikov.botd.storage.LocalFileProgressStorage;
-import com.github.igorperikov.botd.storage.LocalFileRefreshTokenStorage;
+import com.github.igorperikov.botd.storage.ResourceFileAccessTokenStorage;
+import com.github.igorperikov.botd.storage.ResourceFileProgressStorage;
+import com.github.igorperikov.botd.storage.ResourceFileRefreshTokenStorage;
 import com.github.igorperikov.botd.telegram.TelegramMessageSender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,24 +29,24 @@ public class Application {
 
         try (
                 var context = new AppExecutionContext(telegramMessageSender);
-                var ignored = new FileBasedProcessMutualExclusionLock()
+                var ignored = new FileBasedInterProcessLock()
         ) {
             var spotifyApiFactory = new SpotifyApiFactory(
-                    new LocalFileRefreshTokenStorage(),
-                    new LocalFileAccessTokenStorage()
+                    new ResourceFileRefreshTokenStorage(),
+                    new ResourceFileAccessTokenStorage()
             );
             var spotifyApiService = new SpotifyApiService(
                     spotifyApiFactory.create(),
-                    new LocalFileSongCache(),
+                    new ResourceFileSongCache(),
                     new AccuracyService(),
                     telegramMessageSender
             );
 
-            var progressStorage = new LocalFileProgressStorage();
+            var progressStorage = new ResourceFileProgressStorage();
             var sheets = SpreadsheetsFactory.create();
             var extractor = new BotdDataExtractor(sheets);
             var botdData = extractor.extract();
-            var md5Storage = new LocalFileMd5Storage();
+            var md5Storage = new ResourceFileMd5Storage();
 
             var restartRequired = new Md5RestartService(md5Storage, progressStorage).restartRequired(botdData);
             if (restartRequired) {
