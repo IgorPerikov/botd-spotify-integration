@@ -5,6 +5,9 @@ import com.wrapper.spotify.model_objects.specification.ArtistSimplified;
 import com.wrapper.spotify.model_objects.specification.Track;
 import com.wrapper.spotify.model_objects.specification.TrackSimplified;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 /**
  * Abstraction for either
  * {@link com.wrapper.spotify.model_objects.specification.AlbumSimplified}
@@ -45,5 +48,12 @@ public class SpotifyEntity extends SpotifyId {
 
     public ArtistSimplified[] getArtists() {
         return artists;
+    }
+
+    @Override
+    public String toString() {
+        return Arrays.stream(getArtists()).map(ArtistSimplified::getName).collect(Collectors.joining(",")) +
+                " " +
+                getName();
     }
 }
