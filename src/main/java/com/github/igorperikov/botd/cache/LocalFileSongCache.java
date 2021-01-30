@@ -2,6 +2,8 @@ package com.github.igorperikov.botd.cache;
 
 import com.github.igorperikov.botd.entity.BotdTrack;
 import com.github.igorperikov.botd.entity.SpotifyId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -11,6 +13,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class LocalFileSongCache implements SongCache {
+    private static final Logger log = LoggerFactory.getLogger(LocalFileSongCache.class);
+
     private static final String KEY_VALUE_SEPARATOR = " -> ";
     private static final String MULTIVALUE_SEPARATOR = ",";
     private static final Path LOCAL_FILE_PATH = Path.of(
@@ -61,6 +65,9 @@ public class LocalFileSongCache implements SongCache {
         try {
             List<String> strings = Files.readAllLines(LOCAL_FILE_PATH);
             for (String record : strings) {
+                if (!record.contains(KEY_VALUE_SEPARATOR)) {
+                    log.error("Incorrect data: '{}' should contain {}", record, KEY_VALUE_SEPARATOR);
+                }
                 String[] kvSplit = record.split(KEY_VALUE_SEPARATOR);
                 if (kvSplit.length == 2) {
                     cache.put(
