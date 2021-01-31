@@ -2,7 +2,6 @@ package com.github.igorperikov.botd.accuracy;
 
 import com.github.igorperikov.botd.entity.BotdTrack;
 import com.github.igorperikov.botd.entity.SpotifyEntity;
-import com.wrapper.spotify.model_objects.specification.ArtistSimplified;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,12 +48,7 @@ public class AccuracyService {
 
     private static String entitiesToString(List<SpotifyEntity> entities) {
         return entities.stream()
-                .map(AccuracyService::entityToString)
+                .map(SpotifyEntity::toString)
                 .collect(Collectors.joining(" ; ", "[", "]"));
-    }
-
-    private static String entityToString(SpotifyEntity entity) {
-        String artists = Arrays.stream(entity.getArtists()).map(ArtistSimplified::getName).collect(Collectors.joining(","));
-        return artists + "-" + entity.getName();
     }
 }
