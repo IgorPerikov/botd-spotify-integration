@@ -1,5 +1,6 @@
 package com.github.igorperikov.botd.telegram;
 
+import com.github.igorperikov.botd.RetryUtils;
 import org.apache.http.HttpHeaders;
 
 import java.io.IOException;
@@ -49,22 +50,25 @@ public class TelegramMessageSender {
         send(message, CONTENT_MANAGER_ID);
     }
 
-    // TODO: retries
     private void send(String message, String recipientId) {
-        try {
-            httpClient.send(
-                    HttpRequest.newBuilder()
-                            .POST(HttpRequest.BodyPublishers.ofString(String.format(PAYLOAD_TEMPLATE, message)))
-                            .uri(new URI(API_URI_STRING + URLEncoder.encode(recipientId, Charset.defaultCharset())))
-                            .timeout(Duration.ofSeconds(2))
-                            .header(HttpHeaders.CONTENT_TYPE, "application/json")
-                            .header(HttpHeaders.AUTHORIZATION, FLOW_API_BOTD_BOT_AUTHORIZATION)
-                            .build(),
-                    HttpResponse.BodyHandlers.ofString()
-            );
-        } catch (IOException | InterruptedException | URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
+        RetryUtils.execute(
+                () -> {
+                    try {
+                        return httpClient.send(
+                                HttpRequest.newBuilder()
+                                        .POST(HttpRequest.BodyPublishers.ofString(String.format(PAYLOAD_TEMPLATE, message)))
+                                        .uri(new URI(API_URI_STRING + URLEncoder.encode(recipientId, Charset.defaultCharset())))
+                                        .timeout(Duration.ofSeconds(2))
+                                        .header(HttpHeaders.CONTENT_TYPE, "application/json")
+                                        .header(HttpHeaders.AUTHORIZATION, FLOW_API_BOTD_BOT_AUTHORIZATION)
+                                        .build(),
+                                HttpResponse.BodyHandlers.ofString());
+                    } catch (IOException | InterruptedException | URISyntaxException e) {
+                        throw new RuntimeException(e);
+                    }
+                },
+                3
+        );
     }
 
     private static String wrapWithRobotEmoji(String message) {

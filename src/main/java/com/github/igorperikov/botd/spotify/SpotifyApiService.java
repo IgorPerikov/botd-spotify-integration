@@ -1,5 +1,6 @@
 package com.github.igorperikov.botd.spotify;
 
+import com.github.igorperikov.botd.RetryUtils;
 import com.github.igorperikov.botd.accuracy.AccuracyService;
 import com.github.igorperikov.botd.accuracy.DistanceCalculationUtils;
 import com.github.igorperikov.botd.cache.SongCache;
@@ -19,6 +20,13 @@ import com.wrapper.spotify.model_objects.specification.AlbumSimplified;
 import com.wrapper.spotify.model_objects.specification.Paging;
 import com.wrapper.spotify.model_objects.specification.PlaylistTrack;
 import com.wrapper.spotify.model_objects.specification.Track;
+import com.wrapper.spotify.requests.data.AbstractDataRequest;
+import com.wrapper.spotify.requests.data.albums.GetAlbumsTracksRequest;
+import com.wrapper.spotify.requests.data.playlists.AddItemsToPlaylistRequest;
+import com.wrapper.spotify.requests.data.playlists.GetPlaylistsItemsRequest;
+import com.wrapper.spotify.requests.data.playlists.RemoveItemsFromPlaylistRequest;
+import com.wrapper.spotify.requests.data.search.simplified.SearchAlbumsRequest;
+import com.wrapper.spotify.requests.data.search.simplified.SearchTracksRequest;
 import org.apache.hc.core5.http.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -95,32 +103,25 @@ public class SpotifyApiService {
     }
 
     private PlaylistItems getPlaylistItems(int limit, int offset) {
-        try {
-            Paging<PlaylistTrack> paging = spotifyApi.getPlaylistsItems(PLAYLIST_ID)
-                    .limit(limit)
-                    .offset(offset)
-                    .build()
-                    .execute();
-            return new PlaylistItems(paging.getItems(), paging.getNext() != null);
-        } catch (IOException | SpotifyWebApiException | ParseException e) {
-            throw new RuntimeException(e);
-        }
+        GetPlaylistsItemsRequest request = spotifyApi.getPlaylistsItems(PLAYLIST_ID)
+                .limit(limit)
+                .offset(offset)
+                .build();
+        Paging<PlaylistTrack> paging = executeWithRetry(request);
+        return new PlaylistItems(paging.getItems(), paging.getNext() != null);
     }
 
     private void deletePlaylistItems(List<PlaylistTrack> allItems, int limit) {
         for (List<PlaylistTrack> partitionItems : Lists.partition(allItems, limit)) {
-            try {
-                JsonArray uris = new JsonArray();
-                for (PlaylistTrack partitionItem : partitionItems) {
-                    String uri = ((Track) partitionItem.getTrack()).getUri();
-                    JsonObject jsonObject = new JsonObject();
-                    jsonObject.add("uri", new JsonPrimitive(uri));
-                    uris.add(jsonObject);
-                }
-                spotifyApi.removeItemsFromPlaylist(PLAYLIST_ID, uris).build().execute();
-            } catch (IOException | SpotifyWebApiException | ParseException e) {
-                throw new RuntimeException(e);
+            JsonArray uris = new JsonArray();
+            for (PlaylistTrack partitionItem : partitionItems) {
+                String uri = ((Track) partitionItem.getTrack()).getUri();
+                JsonObject jsonObject = new JsonObject();
+                jsonObject.add("uri", new JsonPrimitive(uri));
+                uris.add(jsonObject);
             }
+            RemoveItemsFromPlaylistRequest request = spotifyApi.removeItemsFromPlaylist(PLAYLIST_ID, uris).build();
+            executeWithRetry(request);
         }
     }
 
@@ -166,56 +167,50 @@ public class SpotifyApiService {
     }
 
     private Track[] findSongs(String query) {
-        try {
-            return spotifyApi.searchTracks(query)
-                    .market(CountryCode.RU)
-                    .limit(NUMBER_OF_ITEMS_TO_SEARCH_FOR)
-                    .build()
-                    .execute()
-                    .getItems();
-        } catch (IOException | SpotifyWebApiException | ParseException e) {
-            throw new RuntimeException(e);
-        }
+        SearchTracksRequest request = spotifyApi.searchTracks(query)
+                .market(CountryCode.RU)
+                .limit(NUMBER_OF_ITEMS_TO_SEARCH_FOR)
+                .build();
+        return executeWithRetry(request).getItems();
     }
 
     private AlbumSimplified[] findAlbumCandidates(String query) {
-        try {
-            return spotifyApi.searchAlbums(query)
-                    .market(CountryCode.RU)
-                    .limit(NUMBER_OF_ITEMS_TO_SEARCH_FOR)
-                    .build()
-                    .execute()
-                    .getItems();
-        } catch (IOException | SpotifyWebApiException | ParseException e) {
-            throw new RuntimeException(e);
-        }
+        SearchAlbumsRequest request = spotifyApi.searchAlbums(query)
+                .market(CountryCode.RU)
+                .limit(NUMBER_OF_ITEMS_TO_SEARCH_FOR)
+                .build();
+        return executeWithRetry(request).getItems();
     }
 
     private List<SpotifyEntity> getTracksOfAlbum(SpotifyId spotifyId) {
-        try {
-            return Arrays.stream(
-                    spotifyApi.getAlbumsTracks(spotifyId.getId())
-                            .market(CountryCode.RU)
-                            .limit(NUMBER_OF_ITEMS_TO_SEARCH_FOR)
-                            .build()
-                            .execute()
-                            .getItems())
-                    .map(SpotifyEntity::fromTrack)
-                    .collect(Collectors.toList());
-        } catch (IOException | SpotifyWebApiException | ParseException e) {
-            throw new RuntimeException(e);
-        }
+        GetAlbumsTracksRequest request = spotifyApi.getAlbumsTracks(spotifyId.getId())
+                .market(CountryCode.RU)
+                .limit(NUMBER_OF_ITEMS_TO_SEARCH_FOR)
+                .build();
+        return Arrays.stream(executeWithRetry(request).getItems())
+                .map(SpotifyEntity::fromTrack)
+                .collect(Collectors.toList());
     }
 
     private void addToPlaylist(List<? extends SpotifyId> songs) {
         if (songs.isEmpty()) return;
-        try {
-            spotifyApi.addItemsToPlaylist(
-                    PLAYLIST_ID,
-                    songs.stream().map(SpotifyId::getId).toArray(String[]::new)
-            ).build().execute();
-        } catch (IOException | SpotifyWebApiException | ParseException e) {
-            throw new RuntimeException(e);
-        }
+        AddItemsToPlaylistRequest request = spotifyApi.addItemsToPlaylist(
+                PLAYLIST_ID,
+                songs.stream().map(SpotifyId::getId).toArray(String[]::new)
+        ).build();
+        executeWithRetry(request);
+    }
+
+    private static <T> T executeWithRetry(AbstractDataRequest<T> request) {
+        return RetryUtils.execute(
+                () -> {
+                    try {
+                        return request.execute();
+                    } catch (IOException | SpotifyWebApiException | ParseException e) {
+                        throw new RuntimeException(e);
+                    }
+                },
+                2
+        );
     }
 }
