@@ -16,9 +16,10 @@ public class RetryUtils {
                 return supplier.get();
             } catch (RuntimeException e) {
                 if (attempt == attempts) {
+                    log.warn("Retries exhausted, total attempts={}", attempts);
                     throw e;
                 }
-                log.warn("Retrying with {}ms interval, attempt={}, total={}", MILLIS_BETWEEN_ATTEMPTS, attempt, attempts);
+                log.error("Retrying with {}ms interval, attempt={}, total={}", MILLIS_BETWEEN_ATTEMPTS, attempt, attempts, e);
                 try {
                     TimeUnit.MILLISECONDS.sleep(MILLIS_BETWEEN_ATTEMPTS);
                 } catch (InterruptedException ignored) {
