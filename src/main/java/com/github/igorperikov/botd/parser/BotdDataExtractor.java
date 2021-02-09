@@ -33,6 +33,11 @@ public class BotdDataExtractor {
         BotdStage currentStage = null;
         for (int rowIndex = 0; rowIndex < values.size(); rowIndex++) {
             List<Object> row = values.get(rowIndex);
+            String songName = (String) row.get(2);
+            if (StringUtils.isBlank(songName)) {
+                throw new RuntimeException(String.format("row %d doesn't has blank name", rowIndex));
+            }
+
             Optional<BotdStage> nextStage = checkNextStage(row);
             if (nextStage.isPresent()) {
                 if (currentStage != null) {
@@ -46,7 +51,7 @@ public class BotdDataExtractor {
             BotdTrack botdTrack = new BotdTrack(
                     rowIndex + 2, // 1 for header row and 1 because array is zero-based indexing
                     currentStage.getBand(),
-                    (String) row.get(2),
+                    songName,
                     row.size() >= 7 && ((String) row.get(6)).equalsIgnoreCase("album"),
                     getUser(row)
             );
