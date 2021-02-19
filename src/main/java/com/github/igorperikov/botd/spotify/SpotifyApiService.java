@@ -66,9 +66,9 @@ public class SpotifyApiService {
     }
 
     /**
-     * @return true if something was found and added
+     * @return number of tracks added
      */
-    public boolean add(BotdTrack botdTrack) {
+    public int add(BotdTrack botdTrack) {
         List<? extends SpotifyId> songsToAdd = songCache.lookup(botdTrack);
         if (songsToAdd == null) {
             songsToAdd = find(botdTrack);
@@ -80,13 +80,17 @@ public class SpotifyApiService {
             log.info("{} found in song cache", botdTrack);
         }
         addToPlaylist(songsToAdd);
-        return !songsToAdd.isEmpty();
+        return songsToAdd.size();
     }
 
-    public void deleteAllSongsFromPlaylist() {
+    /**
+     * @return number of tracks that existed in playlist before deletion
+     */
+    public int deleteAllSongsFromPlaylist() {
         int limit = 100; // max allowed by spotify api
         List<PlaylistTrack> playlistItems = getAllPlaylistItems(limit);
         deletePlaylistItems(playlistItems, limit);
+        return playlistItems.size();
     }
 
     private List<PlaylistTrack> getAllPlaylistItems(int limit) {

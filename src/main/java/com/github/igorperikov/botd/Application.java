@@ -50,15 +50,14 @@ public class Application {
 
             var restartRequired = new Md5RestartService(md5Storage, progressStorage).restartRequired(botdData);
             if (restartRequired) {
-                context.registerRestart();
-                new CleanupService(spotifyApiService, progressStorage).cleanup();
+                new CleanupService(spotifyApiService, progressStorage, context).cleanup();
             }
 
             for (BotdTrack botdTrack : progressStorage.getAllUnprocessed(botdData)) {
                 log.info("Start processing {}", botdTrack);
-                boolean added = spotifyApiService.add(botdTrack);
-                if (added) {
-                    context.registerNewTrackAddition();
+                int added = spotifyApiService.add(botdTrack);
+                if (added != 0) {
+                    context.registerNewTrackAddition(added);
                 }
                 progressStorage.markAsProcessed(botdTrack);
                 log.info("Finish processing {}", botdTrack);

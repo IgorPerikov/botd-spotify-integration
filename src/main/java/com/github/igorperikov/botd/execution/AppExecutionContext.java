@@ -9,7 +9,8 @@ public class AppExecutionContext implements AutoCloseable {
 
     private final TelegramMessageSender telegramMessageSender;
 
-    private int newlyAddedTracks = 0;
+    private int tracksBefore = 0;
+    private int tracksAdded = 0;
     private boolean restartRequired = false;
 
     public AppExecutionContext(TelegramMessageSender telegramMessageSender) {
@@ -18,26 +19,31 @@ public class AppExecutionContext implements AutoCloseable {
 
     @Override
     public void close() {
-        log.info("Start closing context with restart={}, added tracks={}", restartRequired, newlyAddedTracks);
+        log.info("Start closing context with restart={}, added tracks={}", restartRequired, tracksAdded);
         if (restartRequired) {
-            telegramMessageSender.sendAllChat("Playlist is available again, you can leave your shelter");
-        } else if (newlyAddedTracks != 0) {
+            telegramMessageSender.sendAllChat(String.format(
+                    "Playlist is available again, number of tracks %d -> %d",
+                    tracksBefore,
+                    tracksAdded
+            ));
+        } else if (tracksAdded != 0) {
             telegramMessageSender.sendAllChat(
                     String.format(
                             "%d %s has been added to playlist",
-                            newlyAddedTracks,
-                            newlyAddedTracks == 1 ? "track" : "tracks"
+                            tracksAdded,
+                            tracksAdded == 1 ? "track" : "tracks"
                     )
             );
         }
     }
 
-    public void registerRestart() {
+    public void registerRestart(int tracksBefore) {
         telegramMessageSender.sendAllChat("Playlist destruction initiated, find a shelter immediately");
-        restartRequired = true;
+        this.restartRequired = true;
+        this.tracksBefore = tracksBefore;
     }
 
-    public void registerNewTrackAddition() {
-        newlyAddedTracks++;
+    public void registerNewTrackAddition(int increment) {
+        this.tracksAdded += increment;
     }
 }
