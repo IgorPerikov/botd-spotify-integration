@@ -48,6 +48,8 @@ public class SpotifyApiService {
     private static final String PLAYLIST_ID = "55RwDsEAaMLq4iVFnRrxFc";
     private static final int NUMBER_OF_ITEMS_TO_SEARCH_FOR = 20;
 
+    private static final CountryCode MARKET = CountryCode.SE;
+
     private final SpotifyApi spotifyApi;
     private final SongCache songCache;
     private final AccuracyService accuracyService;
@@ -172,7 +174,7 @@ public class SpotifyApiService {
 
     private Track[] findSongs(String query) {
         SearchTracksRequest request = spotifyApi.searchTracks(query)
-                .market(CountryCode.RU)
+                .market(MARKET)
                 .limit(NUMBER_OF_ITEMS_TO_SEARCH_FOR)
                 .build();
         return executeWithRetry(request).getItems();
@@ -180,7 +182,7 @@ public class SpotifyApiService {
 
     private AlbumSimplified[] findAlbumCandidates(String query) {
         SearchAlbumsRequest request = spotifyApi.searchAlbums(query)
-                .market(CountryCode.RU)
+                .market(MARKET)
                 .limit(NUMBER_OF_ITEMS_TO_SEARCH_FOR)
                 .build();
         return executeWithRetry(request).getItems();
@@ -188,7 +190,7 @@ public class SpotifyApiService {
 
     private List<SpotifyEntity> getTracksOfAlbum(SpotifyId spotifyId) {
         GetAlbumsTracksRequest request = spotifyApi.getAlbumsTracks(spotifyId.getId())
-                .market(CountryCode.RU)
+                .market(MARKET)
                 .limit(NUMBER_OF_ITEMS_TO_SEARCH_FOR)
                 .build();
         return Arrays.stream(executeWithRetry(request).getItems())
