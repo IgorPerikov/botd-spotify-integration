@@ -38,7 +38,7 @@ public class AppExecutionContext implements AutoCloseable {
     }
 
     public void registerRestart(int tracksBefore) {
-        telegramMessageSender.sendAllChat("Playlist destruction initiated, find a shelter immediately");
+        telegramMessageSender.sendAllChat("Playlist destruction initiated");
         this.restartRequired = true;
         this.tracksBefore = tracksBefore;
     }
