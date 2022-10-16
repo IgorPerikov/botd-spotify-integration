@@ -19,6 +19,10 @@ import com.github.igorperikov.botd.telegram.TelegramMessageSender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.LocalDateTime;
+import java.time.Month;
+import java.time.ZoneId;
+
 // todo: unify logging/telegram behind single facade
 // todo tests/decoupling
 public class Application {
@@ -26,6 +30,8 @@ public class Application {
 
     public static void main(String[] args) {
         var telegramMessageSender = new TelegramMessageSender();
+
+        varyaReleaseAlert(telegramMessageSender);
 
         try (
                 var context = new AppExecutionContext(telegramMessageSender);
@@ -65,6 +71,17 @@ public class Application {
             md5Storage.write(progressStorage.getMd5OfAllProcessed(botdData));
         } catch (Exception e) {
             log.error("Execution failed:", e);
+        }
+    }
+
+    private static void varyaReleaseAlert(TelegramMessageSender telegramMessageSender) {
+        LocalDateTime releaseDateTime = LocalDateTime.of(2022, Month.NOVEMBER, 8, 0, 0);
+        LocalDateTime now = LocalDateTime.now(ZoneId.of("Europe/Stockholm"));
+
+        if (now.isBefore(releaseDateTime)) {
+            telegramMessageSender.sendAllChat("Is it November 8th yet? No \uD83D\uDE22");
+        } else {
+            telegramMessageSender.sendAllChat("Is it November 8th yet? Yes \uD83D\uDDA4");
         }
     }
 }
